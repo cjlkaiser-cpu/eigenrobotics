@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P8: Seguidor de Linea - EigenRobotics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #1a1a24;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #06b6d4;
+            --accent-dim: rgba(6, 182, 212, 0.1);
+            --accent-glow: rgba(6, 182, 212, 0.4);
+            --sensor-ir: #ef4444;
+            --line-black: #1f2937;
+            --surface-white: #f8fafc;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+        }
+
+        .hero-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent), #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Content */
+        .content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Result Preview */
+        .result-preview {
+            background: linear-gradient(135deg, var(--bg-card), rgba(6, 182, 212, 0.05));
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #22d3ee, var(--accent));
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-desc {
+            color: var(--text-secondary);
+        }
+
+        /* How IR Sensor Works */
+        .ir-explanation {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 700px) {
+            .ir-explanation {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ir-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .ir-visual {
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .ir-sensor {
+            width: 60px;
+            height: 30px;
+            background: #1e3a5f;
+            border-radius: 5px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .ir-led {
+            position: absolute;
+            bottom: -5px;
+            left: 10px;
+            width: 12px;
+            height: 12px;
+            background: var(--sensor-ir);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--sensor-ir);
+        }
+
+        .ir-detector {
+            position: absolute;
+            bottom: -5px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background: #1a1a24;
+            border-radius: 50%;
+            border: 2px solid #4b5563;
+        }
+
+        .ir-surface {
+            width: 120px;
+            height: 20px;
+            border-radius: 3px;
+            margin-top: 30px;
+        }
+
+        .ir-surface.white {
+            background: var(--surface-white);
+        }
+
+        .ir-surface.black {
+            background: var(--line-black);
+        }
+
+        .ir-beam {
+            position: absolute;
+            width: 2px;
+            height: 25px;
+            left: calc(50% - 15px);
+            top: 70px;
+        }
+
+        .ir-beam.down {
+            background: linear-gradient(180deg, var(--sensor-ir), transparent);
+            transform: rotate(15deg);
+            transform-origin: top center;
+        }
+
+        .ir-beam.up {
+            background: linear-gradient(0deg, var(--sensor-ir), transparent);
+            transform: rotate(-15deg);
+            transform-origin: bottom center;
+            left: calc(50% + 5px);
+            opacity: 0.8;
+        }
+
+        .ir-beam.up.weak {
+            opacity: 0.2;
+            height: 15px;
+        }
+
+        .ir-card h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .ir-card .reading {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .ir-card .reading.high {
+            color: #22c55e;
+        }
+
+        .ir-card .reading.low {
+            color: var(--sensor-ir);
+        }
+
+        .ir-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Logic Table */
+        .logic-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .logic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .logic-item {
+            background: var(--bg-code);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .logic-sensors {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logic-sensor {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .logic-sensor.white {
+            background: var(--surface-white);
+            color: #1f2937;
+        }
+
+        .logic-sensor.black {
+            background: var(--line-black);
+            color: white;
+        }
+
+        .logic-action {
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .logic-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Sensor Diagram */
+        .sensor-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .sensor-svg {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .pin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .pin-table th,
+        .pin-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pin-table th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .pin-table td {
+            color: var(--text-secondary);
+        }
+
+        .pin-label {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .pin-vcc { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .pin-gnd { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+        .pin-out { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+
+        /* Circuit Diagram */
+        .circuit-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            overflow-x: auto;
+        }
+
+        .circuit-svg {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Calibration */
+        .calibration-box {
+            background: linear-gradient(135deg, var(--bg-card), rgba(6, 182, 212, 0.05));
+            border: 2px solid var(--accent);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .calibration-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--accent);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .calibration-steps {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .cal-step {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+        }
+
+        .cal-step-num {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .cal-step-text {
+            color: var(--text-secondary);
+        }
+
+        .cal-formula {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .cal-formula-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            color: var(--accent);
+        }
+
+        .cal-example {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 0.75rem;
+        }
+
+        /* Track Building */
+        .track-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .track-levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .track-level {
+            background: var(--bg-code);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .track-level h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .track-preview {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .track-preview svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .track-level p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Code Section */
+        .code-block {
+            background: var(--bg-code);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .code-header {
+            background: rgba(6, 182, 212, 0.1);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .code-explain {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .code-explain-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .code-explain-line {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 180px;
+        }
+
+        .code-explain-text {
+            color: var(--text-secondary);
+        }
+
+        /* Interactive Demo */
+        .demo-container {
+            background: linear-gradient(135deg, var(--bg-card), rgba(6, 182, 212, 0.05));
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .demo-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-title h3 {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-track {
+            background: var(--surface-white);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            height: 350px;
+            overflow: hidden;
+        }
+
+        .track-line {
+            position: absolute;
+            background: var(--line-black);
+        }
+
+        /* Oval track */
+        .track-oval {
+            width: 70%;
+            height: 60%;
+            top: 20%;
+            left: 15%;
+            border: 20px solid var(--line-black);
+            border-radius: 50%;
+            background: transparent;
+        }
+
+        /* Robot */
+        .demo-robot {
+            position: absolute;
+            width: 50px;
+            height: 60px;
+            transition: all 0.1s linear;
+        }
+
+        .robot-body {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #3b82f6, #1e40af);
+            border-radius: 10px 10px 5px 5px;
+            position: relative;
+        }
+
+        .robot-sensors {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .robot-sensor {
+            width: 10px;
+            height: 10px;
+            background: #1a1a24;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .robot-sensor::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 15px;
+            background: linear-gradient(180deg, var(--sensor-ir), transparent);
+            opacity: 0.7;
+        }
+
+        .robot-sensor.detecting::after {
+            opacity: 1;
+            background: linear-gradient(180deg, var(--sensor-ir), rgba(239, 68, 68, 0.5));
+        }
+
+        .robot-wheels {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 20px;
+            background: #374151;
+            border-radius: 3px;
+        }
+
+        .robot-wheels.left {
+            left: -6px;
+        }
+
+        .robot-wheels.right {
+            right: -6px;
+        }
+
+        /* Demo Controls */
+        .demo-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .demo-btn {
+            padding: 12px 24px;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .demo-btn:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .demo-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Sensor Status */
+        .sensor-status {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+        }
+
+        .sensor-indicator {
+            text-align: center;
+        }
+
+        .sensor-indicator-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .sensor-indicator-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            padding: 4px 12px;
+            border-radius: 6px;
+        }
+
+        .sensor-indicator-value.white {
+            background: var(--surface-white);
+            color: #1f2937;
+        }
+
+        .sensor-indicator-value.black {
+            background: var(--line-black);
+            color: white;
+        }
+
+        /* Troubleshooting */
+        .troubleshoot-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .troubleshoot-table th,
+        .troubleshoot-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .troubleshoot-table th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .troubleshoot-table td {
+            color: var(--text-secondary);
+        }
+
+        .troubleshoot-table td:first-child {
+            color: var(--sensor-ir);
+            font-weight: 500;
+        }
+
+        /* Wokwi */
+        .wokwi-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .wokwi-header {
+            background: var(--bg-code);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wokwi-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .wokwi-dot.red { background: #ef4444; }
+        .wokwi-dot.yellow { background: #eab308; }
+        .wokwi-dot.green { background: #22c55e; }
+
+        .wokwi-title {
+            margin-left: auto;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .wokwi-embed {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Steps */
+        .steps-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .step-item:hover {
+            border-color: var(--accent);
+        }
+
+        .step-num {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Experiments */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .experiment-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-card h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .experiment-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tip Box */
+        .tip-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tip-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tip-text {
+            color: var(--text-secondary);
+        }
+
+        .tip-text strong {
+            color: #22c55e;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-copy {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="../index.html" class="nav-logo orbitron">EIGENROBOTICS</a>
+        <div class="nav-links">
+            <a href="#sensores">Sensores</a>
+            <a href="#codigo">Codigo</a>
+            <a href="#demo">Demo</a>
+            <a href="#pasos">Pasos</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-level orbitron">Proyecto 8</div>
+        <h1 class="orbitron">Seguidor de Linea</h1>
+        <p class="hero-subtitle">
+            Robot que sigue una linea negra sobre fondo blanco.
+            El clasico proyecto de robotica, ahora en tu mesa.
+        </p>
+    </section>
+
+    <!-- Content -->
+    <main class="content">
+        <!-- Result -->
+        <section class="section">
+            <div class="result-preview">
+                <div class="result-icon">🛤️</div>
+                <div class="result-text">Robot que Sigue el Camino</div>
+                <p class="result-desc">Dibuja circuitos con cinta negra y mira como el robot los recorre automaticamente.</p>
+            </div>
+        </section>
+
+        <!-- How IR Sensors Work -->
+        <section class="section" id="sensores">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2 class="section-title">Como Funcionan los Sensores IR</h2>
+            </div>
+
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Los sensores TCRT5000 emiten luz infrarroja y miden cuanta luz rebota.
+                Las superficies blancas reflejan mucha luz, las negras absorben casi toda.
+            </p>
+
+            <div class="ir-explanation">
+                <div class="ir-card">
+                    <div class="ir-visual">
+                        <div class="ir-sensor">
+                            <div class="ir-led"></div>
+                            <div class="ir-detector"></div>
+                        </div>
+                        <div class="ir-beam down"></div>
+                        <div class="ir-beam up"></div>
+                        <div class="ir-surface white"></div>
+                    </div>
+                    <h3>Sobre Blanco</h3>
+                    <div class="reading high">~800</div>
+                    <p>Mucha luz reflejada = lectura ALTA</p>
+                </div>
+
+                <div class="ir-card">
+                    <div class="ir-visual">
+                        <div class="ir-sensor">
+                            <div class="ir-led"></div>
+                            <div class="ir-detector"></div>
+                        </div>
+                        <div class="ir-beam down"></div>
+                        <div class="ir-beam up weak"></div>
+                        <div class="ir-surface black"></div>
+                    </div>
+                    <h3>Sobre Negro</h3>
+                    <div class="reading low">~200</div>
+                    <p>Poca luz reflejada = lectura BAJA</p>
+                </div>
+            </div>
+
+            <div class="tip-box">
+                <div class="tip-icon">💡</div>
+                <div class="tip-text">
+                    <strong>Altura optima:</strong> Los sensores deben estar a 5-10mm del suelo. Muy alto = no detecta bien. Muy bajo = puede rozar.
+                </div>
+            </div>
+        </section>
+
+        <!-- Decision Logic -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2 class="section-title">Logica de Decision</h2>
+            </div>
+
+            <div class="logic-section">
+                <p style="color: var(--text-secondary);">
+                    Con 2 sensores (izquierdo y derecho) el robot "ve" donde esta la linea y decide como moverse:
+                </p>
+
+                <div class="logic-grid">
+                    <div class="logic-item">
+                        <div class="logic-sensors">
+                            <div class="logic-sensor white">IZQ</div>
+                            <div class="logic-sensor white">DER</div>
+                        </div>
+                        <div class="logic-action">AVANZAR</div>
+                        <div class="logic-icon">⬆️</div>
+                        <p style="color: var(--text-dim); font-size: 0.85rem;">Linea en el centro</p>
+                    </div>
+
+                    <div class="logic-item">
+                        <div class="logic-sensors">
+                            <div class="logic-sensor black">IZQ</div>
+                            <div class="logic-sensor white">DER</div>
+                        </div>
+                        <div class="logic-action">GIRAR IZQUIERDA</div>
+                        <div class="logic-icon">↩️</div>
+                        <p style="color: var(--text-dim); font-size: 0.85rem;">Linea a la izquierda</p>
+                    </div>
+
+                    <div class="logic-item">
+                        <div class="logic-sensors">
+                            <div class="logic-sensor white">IZQ</div>
+                            <div class="logic-sensor black">DER</div>
+                        </div>
+                        <div class="logic-action">GIRAR DERECHA</div>
+                        <div class="logic-icon">↪️</div>
+                        <p style="color: var(--text-dim); font-size: 0.85rem;">Linea a la derecha</p>
+                    </div>
+
+                    <div class="logic-item">
+                        <div class="logic-sensors">
+                            <div class="logic-sensor black">IZQ</div>
+                            <div class="logic-sensor black">DER</div>
+                        </div>
+                        <div class="logic-action">AVANZAR LENTO</div>
+                        <div class="logic-icon">🛑</div>
+                        <p style="color: var(--text-dim); font-size: 0.85rem;">Cruce o linea gruesa</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sensor Diagram -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2 class="section-title">Sensor TCRT5000</h2>
+            </div>
+
+            <div class="sensor-diagram">
+                <svg class="sensor-svg" viewBox="0 0 500 250">
+                    <!-- Background -->
+                    <rect width="500" height="250" fill="#12121a"/>
+
+                    <!-- Module PCB -->
+                    <g transform="translate(150, 40)">
+                        <rect x="0" y="0" width="200" height="120" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                        <text x="100" y="25" text-anchor="middle" fill="white" font-size="12" font-weight="bold">TCRT5000 Module</text>
+
+                        <!-- IR LED and Detector -->
+                        <rect x="60" y="40" width="30" height="40" rx="3" fill="#1a1a24" stroke="#4b5563"/>
+                        <circle cx="75" cy="55" r="8" fill="#ef4444"/>
+                        <text x="75" y="75" text-anchor="middle" fill="#ef4444" font-size="8">LED</text>
+
+                        <rect x="110" y="40" width="30" height="40" rx="3" fill="#1a1a24" stroke="#4b5563"/>
+                        <circle cx="125" cy="55" r="8" fill="#374151" stroke="#6b7280" stroke-width="2"/>
+                        <text x="125" y="75" text-anchor="middle" fill="#9ca3af" font-size="8">DET</text>
+
+                        <!-- Potentiometer -->
+                        <circle cx="170" cy="60" r="12" fill="#374151" stroke="#6b7280"/>
+                        <rect x="167" y="50" width="6" height="8" fill="white" rx="1"/>
+                        <text x="170" y="85" text-anchor="middle" fill="#64748b" font-size="8">AJUSTE</text>
+
+                        <!-- Pins -->
+                        <line x1="40" y1="120" x2="40" y2="160" stroke="#ef4444" stroke-width="4"/>
+                        <line x1="80" y1="120" x2="80" y2="160" stroke="#6b7280" stroke-width="4"/>
+                        <line x1="120" y1="120" x2="120" y2="160" stroke="#22c55e" stroke-width="4"/>
+                        <line x1="160" y1="120" x2="160" y2="160" stroke="#22c55e" stroke-width="4"/>
+
+                        <!-- Pin labels -->
+                        <text x="40" y="180" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="bold">VCC</text>
+                        <text x="80" y="180" text-anchor="middle" fill="#9ca3af" font-size="10" font-weight="bold">GND</text>
+                        <text x="120" y="180" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="bold">D0</text>
+                        <text x="160" y="180" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="bold">A0</text>
+
+                        <text x="40" y="195" text-anchor="middle" fill="#64748b" font-size="8">5V</text>
+                        <text x="80" y="195" text-anchor="middle" fill="#64748b" font-size="8">GND</text>
+                        <text x="120" y="195" text-anchor="middle" fill="#64748b" font-size="8">Digital</text>
+                        <text x="160" y="195" text-anchor="middle" fill="#64748b" font-size="8">Analog</text>
+                    </g>
+
+                    <!-- Title -->
+                    <text x="250" y="235" text-anchor="middle" fill="#06b6d4" font-size="11">Modulo sensor IR reflectivo</text>
+                </svg>
+
+                <table class="pin-table">
+                    <thead>
+                        <tr>
+                            <th>Pin</th>
+                            <th>Conectar a</th>
+                            <th>Descripcion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="pin-label pin-vcc">VCC</span></td>
+                            <td>5V de Arduino</td>
+                            <td>Alimentacion del modulo</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pin-label pin-gnd">GND</span></td>
+                            <td>GND de Arduino</td>
+                            <td>Tierra comun</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pin-label pin-out">A0</span></td>
+                            <td>A0 o A1</td>
+                            <td>Salida analogica (0-1023) - usamos esta</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pin-label pin-out">D0</span></td>
+                            <td>Pin digital</td>
+                            <td>Salida digital (0 o 1) - opcional</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Circuit Diagram -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2 class="section-title">Diagrama del Circuito</h2>
+            </div>
+
+            <div class="circuit-container">
+                <svg class="circuit-svg" viewBox="0 0 900 500">
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="900" height="500" fill="#12121a"/>
+                    <rect width="900" height="500" fill="url(#grid)"/>
+
+                    <text x="450" y="30" text-anchor="middle" fill="#06b6d4" font-size="16" font-weight="bold">Circuito Seguidor de Linea</text>
+
+                    <!-- Arduino -->
+                    <g transform="translate(350, 80)">
+                        <rect x="0" y="0" width="200" height="150" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                        <text x="100" y="25" text-anchor="middle" fill="white" font-size="14" font-weight="bold">ARDUINO UNO</text>
+
+                        <!-- Analog pins -->
+                        <text x="20" y="55" fill="#64748b" font-size="10">ANALOG</text>
+                        <circle cx="30" cy="75" r="6" fill="#22c55e"/>
+                        <text x="45" y="78" fill="white" font-size="10">A0</text>
+                        <circle cx="30" cy="95" r="6" fill="#22c55e"/>
+                        <text x="45" y="98" fill="white" font-size="10">A1</text>
+
+                        <!-- Digital/PWM pins -->
+                        <text x="120" y="55" fill="#64748b" font-size="10">DIGITAL</text>
+                        <circle cx="170" cy="75" r="6" fill="#f97316"/>
+                        <text x="155" y="78" text-anchor="end" fill="white" font-size="10">5</text>
+                        <circle cx="170" cy="95" r="6" fill="#f97316"/>
+                        <text x="155" y="98" text-anchor="end" fill="white" font-size="10">6</text>
+
+                        <!-- Power -->
+                        <circle cx="30" cy="130" r="6" fill="#ef4444"/>
+                        <text x="45" y="133" fill="white" font-size="10">5V</text>
+                        <circle cx="100" cy="130" r="6" fill="#374151" stroke="#6b7280"/>
+                        <text x="115" y="133" fill="white" font-size="10">GND</text>
+                    </g>
+
+                    <!-- Left Sensor -->
+                    <g transform="translate(80, 100)">
+                        <rect x="0" y="0" width="120" height="80" rx="8" fill="#1e3a5f" stroke="#06b6d4" stroke-width="2"/>
+                        <text x="60" y="25" text-anchor="middle" fill="#06b6d4" font-size="11" font-weight="bold">SENSOR IZQ</text>
+                        <circle cx="40" cy="50" r="12" fill="#ef4444" opacity="0.8"/>
+                        <circle cx="80" cy="50" r="12" fill="#1a1a24" stroke="#4b5563" stroke-width="2"/>
+                        <text x="60" y="75" text-anchor="middle" fill="#64748b" font-size="9">TCRT5000</text>
+                    </g>
+
+                    <!-- Right Sensor -->
+                    <g transform="translate(700, 100)">
+                        <rect x="0" y="0" width="120" height="80" rx="8" fill="#1e3a5f" stroke="#06b6d4" stroke-width="2"/>
+                        <text x="60" y="25" text-anchor="middle" fill="#06b6d4" font-size="11" font-weight="bold">SENSOR DER</text>
+                        <circle cx="40" cy="50" r="12" fill="#ef4444" opacity="0.8"/>
+                        <circle cx="80" cy="50" r="12" fill="#1a1a24" stroke="#4b5563" stroke-width="2"/>
+                        <text x="60" y="75" text-anchor="middle" fill="#64748b" font-size="9">TCRT5000</text>
+                    </g>
+
+                    <!-- L298N Motor Driver -->
+                    <g transform="translate(350, 280)">
+                        <rect x="0" y="0" width="200" height="120" rx="8" fill="#1f2937" stroke="#f97316" stroke-width="2"/>
+                        <text x="100" y="25" text-anchor="middle" fill="#f97316" font-size="12" font-weight="bold">L298N DRIVER</text>
+                        <text x="100" y="45" text-anchor="middle" fill="#64748b" font-size="10">(igual que P5)</text>
+
+                        <!-- Motor indicators -->
+                        <rect x="20" y="60" width="60" height="40" rx="5" fill="#374151"/>
+                        <text x="50" y="85" text-anchor="middle" fill="white" font-size="10">MOTOR IZQ</text>
+                        <rect x="120" y="60" width="60" height="40" rx="5" fill="#374151"/>
+                        <text x="150" y="85" text-anchor="middle" fill="white" font-size="10">MOTOR DER</text>
+                    </g>
+
+                    <!-- Connections -->
+                    <!-- Left sensor to Arduino A0 -->
+                    <path d="M 200 140 L 280 140 L 280 155 L 350 155" stroke="#22c55e" stroke-width="2" fill="none"/>
+                    <text x="240" y="135" fill="#22c55e" font-size="9">A0</text>
+
+                    <!-- Right sensor to Arduino A1 -->
+                    <path d="M 700 140 L 620 140 L 620 175 L 550 175" stroke="#22c55e" stroke-width="2" fill="none"/>
+                    <text x="660" y="135" fill="#22c55e" font-size="9">A1</text>
+
+                    <!-- Arduino to L298N -->
+                    <path d="M 450 230 L 450 280" stroke="#f97316" stroke-width="2" fill="none"/>
+                    <text x="460" y="260" fill="#f97316" font-size="9">PWM 5,6</text>
+
+                    <!-- Power lines -->
+                    <line x1="380" y1="210" x2="380" y2="250" stroke="#ef4444" stroke-width="2"/>
+                    <line x1="380" y1="250" x2="80" y2="250" stroke="#ef4444" stroke-width="2"/>
+                    <line x1="80" y1="250" x2="80" y2="180" stroke="#ef4444" stroke-width="2"/>
+
+                    <line x1="380" y1="250" x2="820" y2="250" stroke="#ef4444" stroke-width="2"/>
+                    <line x1="820" y1="250" x2="820" y2="180" stroke="#ef4444" stroke-width="2"/>
+
+                    <!-- GND lines -->
+                    <line x1="450" y1="210" x2="450" y2="240" stroke="#6b7280" stroke-width="2"/>
+
+                    <!-- Legend -->
+                    <g transform="translate(100, 450)">
+                        <text x="0" y="0" fill="#64748b" font-size="10">Conexiones:</text>
+                        <rect x="100" y="-10" width="15" height="15" rx="2" fill="#22c55e"/>
+                        <text x="120" y="2" fill="#22c55e" font-size="10">Sensor → A0, A1</text>
+                        <rect x="250" y="-10" width="15" height="15" rx="2" fill="#f97316"/>
+                        <text x="270" y="2" fill="#f97316" font-size="10">Motor PWM</text>
+                        <rect x="380" y="-10" width="15" height="15" rx="2" fill="#ef4444"/>
+                        <text x="400" y="2" fill="#ef4444" font-size="10">5V</text>
+                        <rect x="450" y="-10" width="15" height="15" rx="2" fill="#6b7280"/>
+                        <text x="470" y="2" fill="#6b7280" font-size="10">GND</text>
+                    </g>
+
+                    <!-- Note -->
+                    <text x="450" y="420" text-anchor="middle" fill="#64748b" font-size="11">Los pines de motores (IN1-IN4, ENA, ENB) son los mismos que en P5</text>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Calibration -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2 class="section-title">Calibracion</h2>
+            </div>
+
+            <div class="calibration-box">
+                <div class="calibration-title">
+                    🎯 Como Calibrar los Sensores
+                </div>
+
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Cada sensor y superficie es diferente. Necesitas encontrar el <strong style="color: var(--accent);">umbral</strong>
+                    que separa "blanco" de "negro" para tu setup especifico.
+                </p>
+
+                <div class="calibration-steps">
+                    <div class="cal-step">
+                        <div class="cal-step-num">1</div>
+                        <div class="cal-step-text">Sube el codigo con la funcion <code style="color: var(--accent);">calibrar()</code> activa</div>
+                    </div>
+                    <div class="cal-step">
+                        <div class="cal-step-num">2</div>
+                        <div class="cal-step-text">Abre el Monitor Serial (9600 baud)</div>
+                    </div>
+                    <div class="cal-step">
+                        <div class="cal-step-num">3</div>
+                        <div class="cal-step-text">Pon los sensores sobre <strong>BLANCO</strong> y anota los valores (ej: 780, 820)</div>
+                    </div>
+                    <div class="cal-step">
+                        <div class="cal-step-num">4</div>
+                        <div class="cal-step-text">Pon los sensores sobre <strong>NEGRO</strong> y anota los valores (ej: 180, 210)</div>
+                    </div>
+                    <div class="cal-step">
+                        <div class="cal-step-num">5</div>
+                        <div class="cal-step-text">Calcula el umbral y actualizalo en el codigo</div>
+                    </div>
+                </div>
+
+                <div class="cal-formula">
+                    <div class="cal-formula-text">UMBRAL = (blanco + negro) / 2</div>
+                    <div class="cal-example">Ejemplo: (800 + 200) / 2 = <strong>500</strong></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Track Building -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2 class="section-title">Construye tu Circuito</h2>
+            </div>
+
+            <div class="track-section">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Usa <strong style="color: var(--accent);">cartulina blanca</strong> como base y
+                    <strong style="color: var(--accent);">cinta aislante negra</strong> (2-3 cm de ancho) para la linea.
+                    Empieza simple y aumenta la dificultad.
+                </p>
+
+                <div class="track-levels">
+                    <div class="track-level">
+                        <h4>Nivel 1: Ovalo</h4>
+                        <div class="track-preview">
+                            <svg viewBox="0 0 200 100">
+                                <ellipse cx="100" cy="50" rx="80" ry="35" fill="none" stroke="#1f2937" stroke-width="8"/>
+                            </svg>
+                        </div>
+                        <p>Curvas suaves, sin intersecciones. Perfecto para empezar.</p>
+                    </div>
+
+                    <div class="track-level">
+                        <h4>Nivel 2: Ocho</h4>
+                        <div class="track-preview">
+                            <svg viewBox="0 0 200 100">
+                                <circle cx="65" cy="50" r="30" fill="none" stroke="#1f2937" stroke-width="8"/>
+                                <circle cx="135" cy="50" r="30" fill="none" stroke="#1f2937" stroke-width="8"/>
+                            </svg>
+                        </div>
+                        <p>Curvas en ambas direcciones. Un cruce en el centro.</p>
+                    </div>
+
+                    <div class="track-level">
+                        <h4>Nivel 3: Complejo</h4>
+                        <div class="track-preview">
+                            <svg viewBox="0 0 200 100">
+                                <path d="M 20 50 Q 50 20 100 50 Q 150 80 180 50" fill="none" stroke="#1f2937" stroke-width="8"/>
+                                <line x1="100" y1="20" x2="100" y2="80" stroke="#1f2937" stroke-width="8"/>
+                            </svg>
+                        </div>
+                        <p>Curvas cerradas, angulos, bifurcaciones.</p>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-text">
+                        <strong>Consejo:</strong> Evita curvas de 90° cerradas al principio. El robot necesita velocidad baja para tomarlas bien.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section class="section" id="codigo">
+            <div class="section-header">
+                <div class="section-number">7</div>
+                <h2 class="section-title">El Codigo</h2>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-filename">p8_seguidor_linea.ino</span>
+                </div>
+                <pre><code class="language-cpp">// Pines Sensores
+const int SENSOR_IZQ = A0;
+const int SENSOR_DER = A1;
+
+// Pines Motores (igual que P5)
+const int ENA = 5;
+const int IN1 = 4;
+const int IN2 = 7;
+const int ENB = 6;
+const int IN3 = 8;
+const int IN4 = 12;
+
+// Configuracion
+const int UMBRAL = 500;      // Ajustar segun calibracion
+const int VEL_BASE = 120;    // Velocidad normal
+const int VEL_GIRO = 80;     // Velocidad en giros
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  parar();
+  delay(3000);  // Esperar 3 segundos antes de arrancar
+}
+
+void loop() {
+  // Leer sensores
+  int lecturaIzq = analogRead(SENSOR_IZQ);
+  int lecturaDer = analogRead(SENSOR_DER);
+
+  // Detectar linea (negro = lectura baja)
+  bool lineaIzq = lecturaIzq < UMBRAL;
+  bool lineaDer = lecturaDer < UMBRAL;
+
+  // Decidir movimiento
+  if (!lineaIzq && !lineaDer) {
+    // Ambos ven blanco: linea en el centro
+    avanzar(VEL_BASE);
+  }
+  else if (lineaIzq && !lineaDer) {
+    // Izquierdo ve negro: girar izquierda
+    girarIzquierda();
+  }
+  else if (!lineaIzq && lineaDer) {
+    // Derecho ve negro: girar derecha
+    girarDerecha();
+  }
+  else {
+    // Ambos ven negro: cruce, avanzar lento
+    avanzar(VEL_GIRO);
+  }
+
+  delay(10);
+}
+
+void avanzar(int velocidad) {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, velocidad);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, velocidad);
+}
+
+void girarIzquierda() {
+  analogWrite(ENA, 0);           // Parar izquierdo
+  analogWrite(ENB, VEL_GIRO);    // Derecho sigue
+}
+
+void girarDerecha() {
+  analogWrite(ENA, VEL_GIRO);    // Izquierdo sigue
+  analogWrite(ENB, 0);           // Parar derecho
+}
+
+void parar() {
+  analogWrite(ENA, 0);
+  analogWrite(ENB, 0);
+}</code></pre>
+            </div>
+
+            <div class="code-explain">
+                <div class="code-explain-item">
+                    <div class="code-explain-line">analogRead(SENSOR)</div>
+                    <div class="code-explain-text">Lee el valor del sensor (0-1023). Bajo = negro, alto = blanco.</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">lectura < UMBRAL</div>
+                    <div class="code-explain-text">Si la lectura es menor que el umbral, el sensor esta sobre negro.</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">girarIzquierda()</div>
+                    <div class="code-explain-text">Para el motor izquierdo, solo gira el derecho. El robot pivotea.</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">VEL_BASE vs VEL_GIRO</div>
+                    <div class="code-explain-text">Velocidad normal para rectas, velocidad reducida para curvas.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Demo -->
+        <section class="section" id="demo">
+            <div class="section-header">
+                <div class="section-number">8</div>
+                <h2 class="section-title">Demo Interactivo</h2>
+            </div>
+
+            <div class="demo-container">
+                <div class="demo-title">
+                    <h3>Mira al Robot Seguir la Linea</h3>
+                    <p style="color: var(--text-secondary);">Observa como los sensores detectan la linea y ajustan el movimiento</p>
+                </div>
+
+                <div class="demo-track" id="trackArea">
+                    <div class="track-line track-oval"></div>
+                    <div class="demo-robot" id="robot" style="left: 50%; top: 18%; transform: translate(-50%, 0) rotate(90deg);">
+                        <div class="robot-body">
+                            <div class="robot-sensors">
+                                <div class="robot-sensor" id="sensorLeft"></div>
+                                <div class="robot-sensor" id="sensorRight"></div>
+                            </div>
+                            <div class="robot-wheels left"></div>
+                            <div class="robot-wheels right"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sensor-status">
+                    <div class="sensor-indicator">
+                        <div class="sensor-indicator-label">Sensor Izquierdo</div>
+                        <div class="sensor-indicator-value white" id="leftStatus">BLANCO</div>
+                    </div>
+                    <div class="sensor-indicator">
+                        <div class="sensor-indicator-label">Accion</div>
+                        <div class="sensor-indicator-value" id="actionStatus" style="background: var(--accent); color: white;">AVANZAR</div>
+                    </div>
+                    <div class="sensor-indicator">
+                        <div class="sensor-indicator-label">Sensor Derecho</div>
+                        <div class="sensor-indicator-value white" id="rightStatus">BLANCO</div>
+                    </div>
+                </div>
+
+                <div class="demo-controls">
+                    <button class="demo-btn" id="startBtn" onclick="toggleSimulation()">▶️ Iniciar</button>
+                    <button class="demo-btn" onclick="resetRobot()">🔄 Reiniciar</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">9</div>
+                <h2 class="section-title">Problemas Comunes</h2>
+            </div>
+
+            <div class="card">
+                <table class="troubleshoot-table">
+                    <thead>
+                        <tr>
+                            <th>Problema</th>
+                            <th>Causa Probable</th>
+                            <th>Solucion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>No detecta la linea</td>
+                            <td>Sensores muy altos</td>
+                            <td>Bajar sensores a 5-10mm del suelo</td>
+                        </tr>
+                        <tr>
+                            <td>Pierde la linea en curvas</td>
+                            <td>Velocidad muy alta</td>
+                            <td>Reducir VEL_BASE y VEL_GIRO</td>
+                        </tr>
+                        <tr>
+                            <td>Oscila mucho (zigzag)</td>
+                            <td>Umbral mal calibrado</td>
+                            <td>Recalibrar con Monitor Serial</td>
+                        </tr>
+                        <tr>
+                            <td>Solo gira a un lado</td>
+                            <td>Sensor danado o desconectado</td>
+                            <td>Verificar conexiones y probar cada sensor</td>
+                        </tr>
+                        <tr>
+                            <td>Motores no responden</td>
+                            <td>Pines mal configurados</td>
+                            <td>Revisar que coincidan con P5</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Wokwi -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">10</div>
+                <h2 class="section-title">Simulador</h2>
+            </div>
+
+            <div class="wokwi-container">
+                <div class="wokwi-header">
+                    <span class="wokwi-dot red"></span>
+                    <span class="wokwi-dot yellow"></span>
+                    <span class="wokwi-dot green"></span>
+                    <span class="wokwi-title">Wokwi Simulator</span>
+                </div>
+                <iframe
+                    class="wokwi-embed"
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    loading="lazy"
+                    title="Simulador Wokwi">
+                </iframe>
+            </div>
+        </section>
+
+        <!-- Steps -->
+        <section class="section" id="pasos">
+            <div class="section-header">
+                <div class="section-number">11</div>
+                <h2 class="section-title">Pasos de Construccion</h2>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>Prepara el chasis P5</h4>
+                        <p>Usa el robot del proyecto 5. Los motores y driver ya estan listos.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>Monta los sensores IR</h4>
+                        <p>Fija los 2 sensores en la parte delantera, separados ~3cm, mirando al suelo.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>Ajusta la altura</h4>
+                        <p>Los sensores deben estar a 5-10mm del suelo. Usa tornillos o LEGO para ajustar.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h4>Conecta los sensores</h4>
+                        <p>VCC a 5V, GND a GND, A0 del sensor izq a A0, A0 del sensor der a A1.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <h4>Construye un circuito simple</h4>
+                        <p>Cartulina blanca + cinta negra en forma de ovalo. Minimo 50x70cm.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">6</div>
+                    <div class="step-content">
+                        <h4>Calibra los sensores</h4>
+                        <p>Usa el modo calibracion para encontrar tu UMBRAL optimo.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">7</div>
+                    <div class="step-content">
+                        <h4>Sube el codigo</h4>
+                        <p>Actualiza UMBRAL con tu valor y sube el codigo al Arduino.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">8</div>
+                    <div class="step-content">
+                        <h4>Prueba y ajusta velocidad</h4>
+                        <p>Si pierde la linea, reduce VEL_BASE. Si es muy lento, aumentala gradualmente.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">12</div>
+                <h2 class="section-title">Experimentos</h2>
+            </div>
+
+            <div class="experiments-grid">
+                <div class="experiment-card">
+                    <div class="experiment-icon">📍</div>
+                    <h4>3er Sensor Central</h4>
+                    <p>Anade un sensor en el centro para detectar mejor cuando esta centrado</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🎛️</div>
+                    <h4>Control PID</h4>
+                    <p>Implementa control proporcional para movimientos mas suaves sin zigzag</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🔀</div>
+                    <h4>Intersecciones</h4>
+                    <p>Detecta cruces y programa que el robot tome decisiones (izq/der/recto)</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">⏱️</div>
+                    <h4>Carrera Cronometrada</h4>
+                    <p>Compite: ¿Cuanto tarda en completar el circuito? Optimiza velocidad.</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🌈</div>
+                    <h4>Lineas de Colores</h4>
+                    <p>Prueba con cintas de otros colores. ¿Cuales detecta mejor?</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🏁</div>
+                    <h4>Detectar Final</h4>
+                    <p>Anade una marca especial (linea perpendicular) para detectar meta</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="../index.html">Inicio</a>
+            <a href="p7-brazo-robotico.html">← P7: Brazo Robotico</a>
+            <a href="p9-lcd.html">P9: Display LCD →</a>
+        </div>
+        <p class="footer-copy">EigenRobotics - Aprendiendo robotica en familia</p>
+    </footer>
+
+    <script>
+        hljs.highlightAll();
+
+        // Demo simulation
+        let isRunning = false;
+        let animationId = null;
+        let angle = 0; // Angle on the oval track (in radians)
+        const robot = document.getElementById('robot');
+        const sensorLeft = document.getElementById('sensorLeft');
+        const sensorRight = document.getElementById('sensorRight');
+        const leftStatus = document.getElementById('leftStatus');
+        const rightStatus = document.getElementById('rightStatus');
+        const actionStatus = document.getElementById('actionStatus');
+        const startBtn = document.getElementById('startBtn');
+        const trackArea = document.getElementById('trackArea');
+
+        // Track parameters (oval)
+        const trackCenterX = 0.5; // 50% of container
+        const trackCenterY = 0.5; // 50% of container
+        const trackRadiusX = 0.35; // 35% of container width
+        const trackRadiusY = 0.3; // 30% of container height
+
+        function toggleSimulation() {
+            isRunning = !isRunning;
+            startBtn.textContent = isRunning ? '⏸️ Pausar' : '▶️ Iniciar';
+            startBtn.classList.toggle('active', isRunning);
+
+            if (isRunning) {
+                animate();
+            } else {
+                cancelAnimationFrame(animationId);
+            }
+        }
+
+        function resetRobot() {
+            isRunning = false;
+            startBtn.textContent = '▶️ Iniciar';
+            startBtn.classList.remove('active');
+            cancelAnimationFrame(animationId);
+            angle = -Math.PI / 2; // Start at top
+            updateRobotPosition();
+            updateSensorDisplay(false, false, 'AVANZAR');
+        }
+
+        function animate() {
+            if (!isRunning) return;
+
+            // Move along the oval
+            angle += 0.02; // Speed
+
+            // Calculate position on oval
+            const rect = trackArea.getBoundingClientRect();
+            const x = trackCenterX + trackRadiusX * Math.cos(angle);
+            const y = trackCenterY + trackRadiusY * Math.sin(angle);
+
+            // Calculate robot rotation (tangent to the oval)
+            const tangentAngle = Math.atan2(
+                trackRadiusY * Math.cos(angle),
+                -trackRadiusX * Math.sin(angle)
+            );
+            const rotation = (tangentAngle * 180 / Math.PI) + 90;
+
+            // Update robot position
+            robot.style.left = (x * 100) + '%';
+            robot.style.top = (y * 100) + '%';
+            robot.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+
+            // Simulate sensor readings based on curve
+            // When turning right (angle increasing in certain ranges), left sensor might see line
+            const curvePhase = Math.sin(angle * 2);
+            let leftSees = false;
+            let rightSees = false;
+            let action = 'AVANZAR';
+
+            // Add some variation to simulate sensor detection
+            if (curvePhase > 0.3) {
+                rightSees = true;
+                action = 'GIRAR DER';
+            } else if (curvePhase < -0.3) {
+                leftSees = true;
+                action = 'GIRAR IZQ';
+            }
+
+            updateSensorDisplay(leftSees, rightSees, action);
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function updateRobotPosition() {
+            const x = trackCenterX + trackRadiusX * Math.cos(angle);
+            const y = trackCenterY + trackRadiusY * Math.sin(angle);
+            const tangentAngle = Math.atan2(
+                trackRadiusY * Math.cos(angle),
+                -trackRadiusX * Math.sin(angle)
+            );
+            const rotation = (tangentAngle * 180 / Math.PI) + 90;
+
+            robot.style.left = (x * 100) + '%';
+            robot.style.top = (y * 100) + '%';
+            robot.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+        }
+
+        function updateSensorDisplay(leftSees, rightSees, action) {
+            sensorLeft.classList.toggle('detecting', leftSees);
+            sensorRight.classList.toggle('detecting', rightSees);
+
+            leftStatus.textContent = leftSees ? 'NEGRO' : 'BLANCO';
+            leftStatus.className = 'sensor-indicator-value ' + (leftSees ? 'black' : 'white');
+
+            rightStatus.textContent = rightSees ? 'NEGRO' : 'BLANCO';
+            rightStatus.className = 'sensor-indicator-value ' + (rightSees ? 'black' : 'white');
+
+            actionStatus.textContent = action;
+        }
+
+        // Initialize
+        angle = -Math.PI / 2;
+        updateRobotPosition();
+    </script>
+</body>
+</html>
