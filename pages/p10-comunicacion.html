@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P10: Comunicacion Serial | EigenRobotics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <style>
+        :root {
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --primary-light: #4ade80;
+            --bg-dark: #0a0a0a;
+            --bg-card: #141414;
+            --bg-card-hover: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: #2a2a2a;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 4rem 2rem;
+            text-align: center;
+            background: radial-gradient(ellipse at center top, rgba(34, 197, 94, 0.15) 0%, transparent 60%);
+        }
+
+        .project-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--bg-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 1.5rem;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .concept-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .concept-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .concept-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(34, 197, 94, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .concept-card h3 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .concept-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Serial Communication Visual */
+        .serial-visual {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .serial-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding: 2rem 0;
+        }
+
+        .device-box {
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .device-box.pc {
+            border-color: #3b82f6;
+        }
+
+        .device-box.arduino {
+            border-color: var(--primary);
+        }
+
+        .device-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .device-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .device-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .serial-cable {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .cable-line {
+            position: relative;
+            height: 4px;
+            width: 120px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .cable-line::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 2px;
+            animation: dataFlow 1.5s infinite;
+        }
+
+        .cable-line.reverse::after {
+            animation: dataFlowReverse 1.5s infinite;
+        }
+
+        @keyframes dataFlow {
+            0% { left: -30px; }
+            100% { left: 120px; }
+        }
+
+        @keyframes dataFlowReverse {
+            0% { left: 120px; }
+            100% { left: -30px; }
+        }
+
+        .cable-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Terminal Demo */
+        .terminal-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #1a1a1a;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ef4444; }
+        .terminal-dot.yellow { background: #f59e0b; }
+        .terminal-dot.green { background: #22c55e; }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .terminal-body {
+            height: 350px;
+            overflow-y: auto;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            background: #0d0d0d;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.25rem;
+            white-space: pre-wrap;
+        }
+
+        .terminal-line.input {
+            color: var(--primary);
+        }
+
+        .terminal-line.output {
+            color: var(--text-secondary);
+        }
+
+        .terminal-line.system {
+            color: #3b82f6;
+        }
+
+        .terminal-line.error {
+            color: var(--error);
+        }
+
+        .terminal-input-area {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: #1a1a1a;
+            border-top: 1px solid var(--border-color);
+            gap: 0.5rem;
+        }
+
+        .terminal-prompt {
+            color: var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            outline: none;
+        }
+
+        .terminal-send {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s;
+        }
+
+        .terminal-send:hover {
+            background: var(--primary-light);
+        }
+
+        /* LED Panel */
+        .led-panel {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-dark);
+            border-radius: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .led-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .led-visual {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #333;
+            border: 2px solid #555;
+            transition: all 0.3s;
+        }
+
+        .led-visual.on-red {
+            background: #ef4444;
+            box-shadow: 0 0 20px #ef4444, 0 0 40px rgba(239, 68, 68, 0.5);
+        }
+
+        .led-visual.on-green {
+            background: #22c55e;
+            box-shadow: 0 0 20px #22c55e, 0 0 40px rgba(34, 197, 94, 0.5);
+        }
+
+        .led-visual.on-blue {
+            background: #3b82f6;
+            box-shadow: 0 0 20px #3b82f6, 0 0 40px rgba(59, 130, 246, 0.5);
+        }
+
+        .led-visual.on-yellow {
+            background: #eab308;
+            box-shadow: 0 0 20px #eab308, 0 0 40px rgba(234, 179, 8, 0.5);
+        }
+
+        .led-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Command buttons */
+        .command-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: #1a1a1a;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .cmd-btn {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cmd-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Protocol Explanation */
+        .protocol-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .protocol-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .protocol-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .protocol-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            color: var(--primary-light);
+        }
+
+        /* Buffer Animation */
+        .buffer-demo {
+            background: var(--bg-dark);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .buffer-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .buffer-container {
+            display: flex;
+            gap: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            flex-wrap: wrap;
+        }
+
+        .buffer-char {
+            width: 32px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .buffer-char.active {
+            border-color: var(--primary);
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--primary);
+        }
+
+        .buffer-char.newline {
+            color: var(--warning);
+            font-size: 0.7rem;
+        }
+
+        /* Code block */
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .code-content {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+        }
+
+        .code-content code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        /* Info box */
+        .info-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin: 1rem 0;
+        }
+
+        .info-box.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .info-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .info-content h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-content p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Command table */
+        .command-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .command-table th,
+        .command-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .command-table th {
+            background: var(--bg-dark);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .command-table td:first-child {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary-light);
+        }
+
+        .command-table tr:hover td {
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        /* Integration section */
+        .integration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .integration-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            transition: all 0.3s;
+        }
+
+        .integration-card:hover {
+            border-color: var(--primary);
+        }
+
+        .integration-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .integration-number {
+            background: var(--primary);
+            color: var(--bg-dark);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .integration-name {
+            font-weight: 600;
+        }
+
+        .integration-commands {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Python section */
+        .python-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .python-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .python-logo {
+            font-size: 1.5rem;
+        }
+
+        .python-title {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        /* Steps */
+        .steps-container {
+            counter-reset: step;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .step-item:last-child {
+            border-bottom: none;
+        }
+
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+            counter-increment: step;
+        }
+
+        .step-icon::before {
+            content: counter(step);
+        }
+
+        .step-text h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .step-text p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Experiment cards */
+        .experiment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            display: flex;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--primary);
+        }
+
+        .experiment-number {
+            width: 32px;
+            height: 32px;
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .experiment-content h4 {
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .experiment-content p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Wokwi */
+        .wokwi-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+
+        .wokwi-header {
+            background: #1a1a1a;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wokwi-title {
+            font-weight: 600;
+        }
+
+        .wokwi-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .wokwi-frame {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 4rem;
+        }
+
+        .footer-nav {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        .footer-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .serial-diagram {
+                flex-direction: column;
+            }
+
+            .cable-line {
+                width: 60px;
+                height: 60px;
+            }
+
+            .terminal-body {
+                height: 250px;
+            }
+
+            .led-panel {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="../index.html" class="logo">EigenRobotics</a>
+            <a href="../index.html" class="back-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Volver al inicio
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <span class="project-badge">Proyecto 10</span>
+        <h1>Comunicacion Serial</h1>
+        <p class="hero-subtitle">Habla con tu Arduino desde el ordenador. Envia comandos y recibe respuestas. La base para crear tus propias interfaces de control.</p>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Resultado -->
+        <section class="section">
+            <h2 class="section-title">El Resultado</h2>
+            <div class="card">
+                <p style="font-size: 1.125rem; margin-bottom: 1.5rem;">
+                    Escribe comandos en tu ordenador y el Arduino responde. Enciende LEDs, lee el estado, haz que parpadee...
+                    todo controlado desde el teclado. Es como chatear con tu robot!
+                </p>
+
+                <div class="serial-visual">
+                    <div class="serial-diagram">
+                        <div class="device-box pc">
+                            <div class="device-icon">💻</div>
+                            <div class="device-name">Tu Ordenador</div>
+                            <div class="device-desc">Monitor Serial</div>
+                        </div>
+
+                        <div class="serial-cable">
+                            <div class="cable-label">TX (envias)</div>
+                            <div class="cable-line"></div>
+                            <div class="cable-line reverse"></div>
+                            <div class="cable-label">RX (recibes)</div>
+                        </div>
+
+                        <div class="device-box arduino">
+                            <div class="device-icon">🤖</div>
+                            <div class="device-name">Arduino UNO</div>
+                            <div class="device-desc">9600 baudios</div>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <span class="info-icon">💡</span>
+                        <div class="info-content">
+                            <h4>Solo necesitas el cable USB</h4>
+                            <p>El mismo cable que usas para programar sirve para comunicarte. Es el puente entre dos mundos!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Conceptos -->
+        <section class="section">
+            <h2 class="section-title">Que Vas a Aprender</h2>
+            <div class="card-grid">
+                <div class="concept-card">
+                    <div class="concept-icon">📡</div>
+                    <h3>Comunicacion Serial</h3>
+                    <p>Los datos viajan como una fila de hormiguitas: uno detras de otro. Por eso se llama "serial".</p>
+                </div>
+                <div class="concept-card">
+                    <div class="concept-icon">📝</div>
+                    <h3>Protocolo de Comandos</h3>
+                    <p>Definir reglas: que palabras entiende el Arduino y como responde a cada una.</p>
+                </div>
+                <div class="concept-card">
+                    <div class="concept-icon">📦</div>
+                    <h3>Buffer de Entrada</h3>
+                    <p>El Arduino guarda las letras que llegan hasta que ve un ENTER. Entonces procesa todo junto.</p>
+                </div>
+                <div class="concept-card">
+                    <div class="concept-icon">🔄</div>
+                    <h3>Bidireccional</h3>
+                    <p>Tu envias comandos Y el Arduino responde. Conversacion de ida y vuelta!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demo Interactivo -->
+        <section class="section">
+            <h2 class="section-title">Prueba el Terminal</h2>
+            <div class="card">
+                <p style="margin-bottom: 1rem;">Escribe comandos como si fuera el Monitor Serial de Arduino. Los LEDs virtuales responderan!</p>
+
+                <div class="terminal-container">
+                    <div class="terminal-header">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                        <span class="terminal-title">Monitor Serial - 9600 baud</span>
+                    </div>
+                    <div class="terminal-body" id="terminalOutput">
+                        <div class="terminal-line system">=================================</div>
+                        <div class="terminal-line system">EigenRobotics - Control Serial</div>
+                        <div class="terminal-line system">=================================</div>
+                        <div class="terminal-line output">Escribe HELP para ver comandos</div>
+                        <div class="terminal-line output"></div>
+                    </div>
+                    <div class="command-buttons">
+                        <button class="cmd-btn" onclick="sendCommand('HELP')">HELP</button>
+                        <button class="cmd-btn" onclick="sendCommand('LED_ON')">LED_ON</button>
+                        <button class="cmd-btn" onclick="sendCommand('LED_OFF')">LED_OFF</button>
+                        <button class="cmd-btn" onclick="sendCommand('LED_R')">LED_R</button>
+                        <button class="cmd-btn" onclick="sendCommand('LED_G')">LED_G</button>
+                        <button class="cmd-btn" onclick="sendCommand('LED_B')">LED_B</button>
+                        <button class="cmd-btn" onclick="sendCommand('OFF')">OFF</button>
+                        <button class="cmd-btn" onclick="sendCommand('STATUS')">STATUS</button>
+                        <button class="cmd-btn" onclick="sendCommand('BLINK:3')">BLINK:3</button>
+                    </div>
+                    <div class="terminal-input-area">
+                        <span class="terminal-prompt">></span>
+                        <input type="text" class="terminal-input" id="terminalInput" placeholder="Escribe un comando..." onkeypress="handleKeyPress(event)">
+                        <button class="terminal-send" onclick="sendFromInput()">Enviar</button>
+                    </div>
+                </div>
+
+                <div class="led-panel">
+                    <div class="led-item">
+                        <div class="led-visual" id="ledRed"></div>
+                        <span class="led-label">ROJO (8)</span>
+                    </div>
+                    <div class="led-item">
+                        <div class="led-visual" id="ledGreen"></div>
+                        <span class="led-label">VERDE (9)</span>
+                    </div>
+                    <div class="led-item">
+                        <div class="led-visual" id="ledBlue"></div>
+                        <span class="led-label">AZUL (10)</span>
+                    </div>
+                    <div class="led-item">
+                        <div class="led-visual" id="ledBuiltin"></div>
+                        <span class="led-label">INTEGRADO (13)</span>
+                    </div>
+                </div>
+
+                <!-- Buffer Demo -->
+                <div class="buffer-demo">
+                    <div class="buffer-label">Buffer de entrada (lo que el Arduino va recibiendo):</div>
+                    <div class="buffer-container" id="bufferDisplay">
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                        <div class="buffer-char">_</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Como Funciona -->
+        <section class="section">
+            <h2 class="section-title">Como Funciona</h2>
+            <div class="card">
+                <div class="protocol-box">
+                    <div class="protocol-title">El Viaje de un Comando</div>
+                    <div class="protocol-flow">
+                        <div class="protocol-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <strong>Escribes "LED_ON"</strong> y pulsas Enter en tu ordenador
+                            </div>
+                        </div>
+                        <div class="protocol-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                Las letras viajan por el cable USB: <strong>L...E...D..._...O...N...↵</strong>
+                            </div>
+                        </div>
+                        <div class="protocol-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                El Arduino guarda cada letra en el <strong>buffer</strong> hasta ver el Enter (↵)
+                            </div>
+                        </div>
+                        <div class="protocol-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                Compara el texto con su lista de comandos: <strong>"Ah! LED_ON!"</strong>
+                            </div>
+                        </div>
+                        <div class="protocol-step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                Ejecuta la accion y <strong>envia respuesta</strong>: "LED encendido"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box warning" style="margin-top: 1.5rem;">
+                    <span class="info-icon">⚡</span>
+                    <div class="info-content">
+                        <h4>9600 Baudios</h4>
+                        <p>Es la velocidad: 9600 bits por segundo. Como un acuerdo entre Arduino y PC para hablar al mismo ritmo. Si uno va mas rapido, se pierden datos!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabla de Comandos -->
+        <section class="section">
+            <h2 class="section-title">Comandos Disponibles</h2>
+            <div class="card">
+                <table class="command-table">
+                    <thead>
+                        <tr>
+                            <th>Comando</th>
+                            <th>Que hace</th>
+                            <th>Respuesta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>HELP</td>
+                            <td>Muestra lista de comandos</td>
+                            <td>Lista completa</td>
+                        </tr>
+                        <tr>
+                            <td>LED_ON</td>
+                            <td>Enciende el LED integrado (pin 13)</td>
+                            <td>"LED encendido"</td>
+                        </tr>
+                        <tr>
+                            <td>LED_OFF</td>
+                            <td>Apaga el LED integrado</td>
+                            <td>"LED apagado"</td>
+                        </tr>
+                        <tr>
+                            <td>LED_R</td>
+                            <td>Enciende LED rojo (pin 8)</td>
+                            <td>"LED Rojo encendido"</td>
+                        </tr>
+                        <tr>
+                            <td>LED_G</td>
+                            <td>Enciende LED verde (pin 9)</td>
+                            <td>"LED Verde encendido"</td>
+                        </tr>
+                        <tr>
+                            <td>LED_B</td>
+                            <td>Enciende LED azul (pin 10)</td>
+                            <td>"LED Azul encendido"</td>
+                        </tr>
+                        <tr>
+                            <td>OFF</td>
+                            <td>Apaga todos los LEDs</td>
+                            <td>"Todo apagado"</td>
+                        </tr>
+                        <tr>
+                            <td>BLINK:5</td>
+                            <td>Parpadea N veces (1-20)</td>
+                            <td>"Parpadeando..."</td>
+                        </tr>
+                        <tr>
+                            <td>SAY:hola</td>
+                            <td>Arduino repite tu mensaje</td>
+                            <td>"Arduino dice: hola"</td>
+                        </tr>
+                        <tr>
+                            <td>STATUS</td>
+                            <td>Muestra estado actual</td>
+                            <td>LED, uptime, memoria</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- El Codigo -->
+        <section class="section">
+            <h2 class="section-title">El Codigo</h2>
+            <div class="card">
+                <p style="margin-bottom: 1rem;">El secreto esta en el <code>loop()</code>: lee caracter por caracter hasta encontrar un Enter.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-filename">p10_comunicacion.ino</span>
+                    </div>
+                    <div class="code-content">
+                        <pre><code class="language-cpp">// Buffer para guardar el comando
+String comandoBuffer = "";
+
+void setup() {
+  Serial.begin(9600);  // Iniciar comunicacion
+
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  Serial.println("EigenRobotics - Control Serial");
+  Serial.println("Escribe HELP para ver comandos");
+}
+
+void loop() {
+  // Mientras haya datos esperando...
+  while (Serial.available() > 0) {
+    char c = Serial.read();  // Lee UN caracter
+
+    if (c == '\n' || c == '\r') {
+      // Es un ENTER! Procesar comando
+      if (comandoBuffer.length() > 0) {
+        procesarComando(comandoBuffer);
+        comandoBuffer = "";  // Limpiar para el siguiente
+      }
+    } else {
+      // Agregar letra al buffer
+      comandoBuffer += c;
+    }
+  }
+}
+
+void procesarComando(String cmd) {
+  cmd.trim();           // Quitar espacios
+  cmd.toUpperCase();    // Todo a mayusculas
+
+  Serial.print("> ");
+  Serial.println(cmd);  // Echo del comando
+
+  // Comparar con comandos conocidos
+  if (cmd == "LED_ON") {
+    digitalWrite(LED_BUILTIN, HIGH);
+    Serial.println("LED encendido");
+  }
+  else if (cmd == "LED_OFF") {
+    digitalWrite(LED_BUILTIN, LOW);
+    Serial.println("LED apagado");
+  }
+  else if (cmd.startsWith("BLINK:")) {
+    int veces = cmd.substring(6).toInt();
+    parpadear(veces);
+  }
+  else {
+    Serial.println("Comando no reconocido");
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <span class="info-icon">🔍</span>
+                    <div class="info-content">
+                        <h4>Serial.available()</h4>
+                        <p>Devuelve cuantos caracteres hay esperando en el buffer. Si es mayor que 0, hay datos que leer!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Integracion con Python -->
+        <section class="section">
+            <h2 class="section-title">Nivel Avanzado: Control desde Python</h2>
+            <div class="card">
+                <p style="margin-bottom: 1rem;">Una vez dominas la comunicacion serial, puedes controlar Arduino desde cualquier programa!</p>
+
+                <div class="python-box">
+                    <div class="python-header">
+                        <span class="python-logo">🐍</span>
+                        <span class="python-title">Control con Python</span>
+                    </div>
+
+                    <div class="code-block" style="margin: 0;">
+                        <div class="code-header">
+                            <span class="code-filename">control_arduino.py</span>
+                        </div>
+                        <div class="code-content">
+                            <pre><code class="language-python">import serial
+import time
+
+# Conectar al Arduino
+arduino = serial.Serial('/dev/cu.usbmodem14201', 9600)
+time.sleep(2)  # Esperar a que inicie
+
+# Encender LED
+arduino.write(b'LED_ON\n')
+respuesta = arduino.readline()
+print(respuesta.decode())
+
+# Parpadear 5 veces
+arduino.write(b'BLINK:5\n')
+
+# Leer todas las respuestas
+while True:
+    if arduino.in_waiting:
+        print(arduino.readline().decode(), end='')
+    else:
+        time.sleep(0.1)
+        if not arduino.in_waiting:
+            break
+
+arduino.close()</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box warning" style="margin-top: 1rem;">
+                    <span class="info-icon">💡</span>
+                    <div class="info-content">
+                        <h4>Primero instala pyserial</h4>
+                        <p>Ejecuta: <code>pip install pyserial</code>. El puerto varia segun tu sistema (Windows: COM3, Mac: /dev/cu.usbmodem...)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Integracion con otros proyectos -->
+        <section class="section">
+            <h2 class="section-title">Combina con Otros Proyectos</h2>
+            <div class="card">
+                <p style="margin-bottom: 1rem;">La comunicacion serial es la base para controlar cualquier proyecto desde tu PC!</p>
+
+                <div class="integration-grid">
+                    <div class="integration-card">
+                        <div class="integration-header">
+                            <span class="integration-number">P5</span>
+                            <span class="integration-name">Robot Movil</span>
+                        </div>
+                        <div class="integration-commands">
+                            ADELANTE, ATRAS<br>
+                            IZQUIERDA, DERECHA<br>
+                            VELOCIDAD:150
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <div class="integration-header">
+                            <span class="integration-number">P7</span>
+                            <span class="integration-name">Brazo Robotico</span>
+                        </div>
+                        <div class="integration-commands">
+                            BASE:90, CODO:45<br>
+                            PINZA:ABRIR<br>
+                            PINZA:CERRAR
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <div class="integration-header">
+                            <span class="integration-number">P9</span>
+                            <span class="integration-name">Display LCD</span>
+                        </div>
+                        <div class="integration-commands">
+                            MSG:Hola mundo<br>
+                            CLEAR<br>
+                            LINEA2:texto
+                        </div>
+                    </div>
+                    <div class="integration-card">
+                        <div class="integration-header">
+                            <span class="integration-number">P3</span>
+                            <span class="integration-name">Sistema Alarma</span>
+                        </div>
+                        <div class="integration-commands">
+                            ARMAR, DESARMAR<br>
+                            STATUS<br>
+                            SENSIBILIDAD:50
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pasos -->
+        <section class="section">
+            <h2 class="section-title">Pasos para Empezar</h2>
+            <div class="card">
+                <div class="steps-container">
+                    <div class="step-item">
+                        <div class="step-icon"></div>
+                        <div class="step-text">
+                            <h4>Sube el codigo</h4>
+                            <p>Conecta Arduino por USB y sube p10_comunicacion.ino</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon"></div>
+                        <div class="step-text">
+                            <h4>Abre el Monitor Serial</h4>
+                            <p>Tools → Serial Monitor (o Ctrl+Shift+M)</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon"></div>
+                        <div class="step-text">
+                            <h4>Configura correctamente</h4>
+                            <p>Selecciona 9600 baud y "Newline" en el desplegable</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon"></div>
+                        <div class="step-text">
+                            <h4>Escribe HELP</h4>
+                            <p>Veras la lista de comandos disponibles</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon"></div>
+                        <div class="step-text">
+                            <h4>Prueba LED_ON</h4>
+                            <p>El LED integrado (pin 13) debe encenderse</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-icon"></div>
+                        <div class="step-text">
+                            <h4>Inventa tu comando!</h4>
+                            <p>Modifica el codigo para crear comandos nuevos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Wokwi Simulator -->
+        <section class="section">
+            <h2 class="section-title">Simulador</h2>
+            <div class="wokwi-container">
+                <div class="wokwi-header">
+                    <span class="wokwi-title">Wokwi - Simulador Arduino</span>
+                    <a href="https://wokwi.com/projects/new/arduino-uno" target="_blank" class="wokwi-link">Abrir en Wokwi →</a>
+                </div>
+                <iframe
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    class="wokwi-frame"
+                    loading="lazy"
+                    allow="fullscreen">
+                </iframe>
+            </div>
+            <div class="info-box">
+                <span class="info-icon">💡</span>
+                <div class="info-content">
+                    <h4>Tip para Wokwi</h4>
+                    <p>Pega el codigo y haz click en el icono del Monitor Serial (pantalla con terminal) para ver las respuestas!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experimentos -->
+        <section class="section">
+            <h2 class="section-title">Experimentos</h2>
+            <div class="experiment-grid">
+                <div class="experiment-card">
+                    <div class="experiment-number">1</div>
+                    <div class="experiment-content">
+                        <h4>Comando RAINBOW</h4>
+                        <p>Crea un comando que encienda rojo, verde, azul en secuencia con delay entre cada uno.</p>
+                    </div>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-number">2</div>
+                    <div class="experiment-content">
+                        <h4>Comandos con Parametros</h4>
+                        <p>Crea DELAY:500 para cambiar la velocidad de parpadeo.</p>
+                    </div>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-number">3</div>
+                    <div class="experiment-content">
+                        <h4>Leer Sensores</h4>
+                        <p>Anade comando TEMP que lea un sensor de temperatura y envie el valor.</p>
+                    </div>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-number">4</div>
+                    <div class="experiment-content">
+                        <h4>Control del Robot P5</h4>
+                        <p>Integra con el robot: ADELANTE, ATRAS, GIRA_IZQ, GIRA_DER.</p>
+                    </div>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-number">5</div>
+                    <div class="experiment-content">
+                        <h4>Datalogger</h4>
+                        <p>Crea un programa Python que guarde lecturas de sensores en un archivo CSV.</p>
+                    </div>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-number">6</div>
+                    <div class="experiment-content">
+                        <h4>Interfaz Grafica</h4>
+                        <p>Usa Processing o Python+Tkinter para crear botones que envien comandos.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <nav class="footer-nav">
+            <a href="p9-lcd.html" class="footer-link">← P9: Display LCD</a>
+            <a href="../index.html" class="footer-link">Inicio</a>
+        </nav>
+        <p class="footer-text">EigenRobotics - Aprendiendo robotica en familia</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        hljs.highlightAll();
+
+        // Terminal state
+        let ledState = {
+            red: false,
+            green: false,
+            blue: false,
+            builtin: false
+        };
+        let startTime = Date.now();
+        let blinking = false;
+
+        // Update buffer display
+        function updateBuffer(text) {
+            const container = document.getElementById('bufferDisplay');
+            container.innerHTML = '';
+
+            const paddedText = text.padEnd(10, '_');
+            for (let i = 0; i < 10; i++) {
+                const char = document.createElement('div');
+                char.className = 'buffer-char' + (i < text.length ? ' active' : '');
+                char.textContent = paddedText[i];
+                container.appendChild(char);
+            }
+        }
+
+        // Update LED visuals
+        function updateLEDs() {
+            document.getElementById('ledRed').className = 'led-visual' + (ledState.red ? ' on-red' : '');
+            document.getElementById('ledGreen').className = 'led-visual' + (ledState.green ? ' on-green' : '');
+            document.getElementById('ledBlue').className = 'led-visual' + (ledState.blue ? ' on-blue' : '');
+            document.getElementById('ledBuiltin').className = 'led-visual' + (ledState.builtin ? ' on-yellow' : '');
+        }
+
+        // Add line to terminal
+        function addLine(text, className = 'output') {
+            const terminal = document.getElementById('terminalOutput');
+            const line = document.createElement('div');
+            line.className = 'terminal-line ' + className;
+            line.textContent = text;
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        // Turn all LEDs off
+        function allOff() {
+            ledState.red = false;
+            ledState.green = false;
+            ledState.blue = false;
+            ledState.builtin = false;
+            updateLEDs();
+        }
+
+        // Process command
+        function processCommand(cmd) {
+            cmd = cmd.trim().toUpperCase();
+
+            addLine('> ' + cmd, 'input');
+
+            if (cmd === 'HELP') {
+                addLine('--- COMANDOS DISPONIBLES ---', 'output');
+                addLine('LED_ON    - Enciende LED integrado', 'output');
+                addLine('LED_OFF   - Apaga LED integrado', 'output');
+                addLine('LED_R     - LED Rojo', 'output');
+                addLine('LED_G     - LED Verde', 'output');
+                addLine('LED_B     - LED Azul', 'output');
+                addLine('OFF       - Apaga todo', 'output');
+                addLine('BLINK:N   - Parpadea N veces (1-20)', 'output');
+                addLine('SAY:texto - Arduino repite el texto', 'output');
+                addLine('STATUS    - Muestra estado actual', 'output');
+                addLine('HELP      - Esta ayuda', 'output');
+                addLine('----------------------------', 'output');
+            }
+            else if (cmd === 'LED_ON') {
+                ledState.builtin = true;
+                updateLEDs();
+                addLine('LED encendido', 'output');
+            }
+            else if (cmd === 'LED_OFF') {
+                ledState.builtin = false;
+                updateLEDs();
+                addLine('LED apagado', 'output');
+            }
+            else if (cmd === 'LED_R') {
+                allOff();
+                ledState.red = true;
+                updateLEDs();
+                addLine('LED Rojo encendido', 'output');
+            }
+            else if (cmd === 'LED_G') {
+                allOff();
+                ledState.green = true;
+                updateLEDs();
+                addLine('LED Verde encendido', 'output');
+            }
+            else if (cmd === 'LED_B') {
+                allOff();
+                ledState.blue = true;
+                updateLEDs();
+                addLine('LED Azul encendido', 'output');
+            }
+            else if (cmd === 'OFF') {
+                allOff();
+                addLine('Todo apagado', 'output');
+            }
+            else if (cmd === 'STATUS') {
+                const uptime = Math.floor((Date.now() - startTime) / 1000);
+                addLine('--- STATUS ---', 'output');
+                addLine('LED integrado: ' + (ledState.builtin ? 'ON' : 'OFF'), 'output');
+                addLine('Uptime: ' + uptime + ' segundos', 'output');
+                addLine('Memoria libre: 1847 bytes', 'output');
+                addLine('--------------', 'output');
+            }
+            else if (cmd.startsWith('BLINK:')) {
+                const times = parseInt(cmd.substring(6));
+                if (times > 0 && times <= 20 && !blinking) {
+                    addLine('Parpadeando ' + times + ' veces...', 'output');
+                    blinking = true;
+                    let count = 0;
+                    const interval = setInterval(() => {
+                        ledState.builtin = !ledState.builtin;
+                        updateLEDs();
+                        count++;
+                        if (count >= times * 2) {
+                            clearInterval(interval);
+                            ledState.builtin = false;
+                            updateLEDs();
+                            addLine('Parpadeo completado', 'output');
+                            addLine('', 'output');
+                            blinking = false;
+                        }
+                    }, 200);
+                } else if (blinking) {
+                    addLine('Error: ya hay un parpadeo en curso', 'error');
+                } else {
+                    addLine('Error: usa BLINK:1 a BLINK:20', 'error');
+                }
+            }
+            else if (cmd.startsWith('SAY:')) {
+                const message = cmd.substring(4);
+                addLine('Arduino dice: ' + message, 'output');
+            }
+            else {
+                addLine('Comando no reconocido. Escribe HELP', 'error');
+            }
+
+            addLine('', 'output');
+        }
+
+        // Send command from button
+        function sendCommand(cmd) {
+            // Animate buffer
+            let i = 0;
+            const bufferInterval = setInterval(() => {
+                if (i <= cmd.length) {
+                    updateBuffer(cmd.substring(0, i));
+                    i++;
+                } else {
+                    clearInterval(bufferInterval);
+                    setTimeout(() => {
+                        updateBuffer('');
+                        processCommand(cmd);
+                    }, 200);
+                }
+            }, 50);
+        }
+
+        // Send from input field
+        function sendFromInput() {
+            const input = document.getElementById('terminalInput');
+            const cmd = input.value;
+            if (cmd.trim()) {
+                sendCommand(cmd);
+                input.value = '';
+            }
+        }
+
+        // Handle enter key
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendFromInput();
+            } else {
+                // Update buffer as user types
+                setTimeout(() => {
+                    const input = document.getElementById('terminalInput');
+                    updateBuffer(input.value.toUpperCase());
+                }, 10);
+            }
+        }
+
+        // Focus input on load
+        document.getElementById('terminalInput').focus();
+    </script>
+</body>
+</html>
