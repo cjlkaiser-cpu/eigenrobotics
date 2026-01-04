@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P5: Robot Explorador - EigenRobotics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #1a1a24;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #6366f1;
+            --accent-dim: rgba(99, 102, 241, 0.1);
+            --accent-secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(99, 102, 241, 0.15) 0%, transparent 50%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                linear-gradient(90deg, transparent 49%, rgba(99, 102, 241, 0.03) 50%, transparent 51%),
+                linear-gradient(transparent 49%, rgba(99, 102, 241, 0.03) 50%, transparent 51%);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, var(--accent-dim), rgba(139, 92, 246, 0.1));
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-badge .star {
+            color: var(--warning);
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Sections */
+        .section {
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .section-intro {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        /* Result Section */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .result-visual {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+        }
+
+        /* Robot Demo */
+        .robot-demo {
+            position: relative;
+            width: 300px;
+            height: 280px;
+        }
+
+        .arena {
+            position: absolute;
+            inset: 0;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+        }
+
+        .obstacle {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--danger);
+            border-radius: 4px;
+            opacity: 0.6;
+        }
+
+        .obstacle.obs1 { top: 20px; right: 40px; }
+        .obstacle.obs2 { bottom: 60px; left: 30px; }
+        .obstacle.obs3 { top: 100px; right: 80px; }
+
+        .robot {
+            position: absolute;
+            width: 60px;
+            height: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .robot-body {
+            position: absolute;
+            top: 15px;
+            left: 5px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            border-radius: 8px;
+            border: 2px solid #60a5fa;
+        }
+
+        .robot-sensor {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 12px;
+            background: #1e1e1e;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            padding-top: 2px;
+        }
+
+        .robot-sensor .eye {
+            width: 5px;
+            height: 5px;
+            background: #94a3b8;
+            border-radius: 50%;
+        }
+
+        .sensor-beam {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 60px solid rgba(99, 102, 241, 0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .robot.scanning .sensor-beam {
+            opacity: 1;
+        }
+
+        .robot-wheel {
+            position: absolute;
+            bottom: 0;
+            width: 12px;
+            height: 20px;
+            background: #1e1e1e;
+            border-radius: 3px;
+        }
+
+        .robot-wheel.left { left: 0; }
+        .robot-wheel.right { right: 0; }
+
+        .robot-status {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 6px 16px;
+            background: var(--bg-code);
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 1s infinite;
+        }
+
+        .status-dot.warning {
+            background: var(--warning);
+        }
+
+        .status-dot.danger {
+            background: var(--danger);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .demo-controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .demo-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-code);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .demo-btn:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .demo-btn.active {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: white;
+        }
+
+        .result-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-text h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .result-list li:last-child {
+            border-bottom: none;
+        }
+
+        .result-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-dim);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .warning-box h4 {
+            color: var(--warning);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .warning-box p {
+            color: var(--text-secondary);
+        }
+
+        .warning-box ul {
+            margin-top: 0.75rem;
+            margin-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .warning-box li {
+            margin: 0.25rem 0;
+        }
+
+        /* Components Grid */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .component-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .component-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .component-card.highlight {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, var(--bg-card), var(--accent-dim));
+        }
+
+        .component-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+        }
+
+        .component-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .component-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* L298N Diagram */
+        .l298n-diagram {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .l298n-diagram h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .l298n-svg {
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* H-Bridge Explanation */
+        .hbridge-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .hbridge-section h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .hbridge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .hbridge-state {
+            background: var(--bg-code);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .hbridge-state h5 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .hbridge-state .pins {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .hbridge-state .arrow {
+            font-size: 1.5rem;
+        }
+
+        /* Circuit Diagram */
+        .circuit-diagram {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .circuit-diagram h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .circuit-svg {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Explanation Card */
+        .explanation-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        .explanation-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .explanation-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .explanation-card .highlight {
+            background: var(--accent-dim);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        /* Algorithm Section */
+        .algorithm-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .algorithm-section h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .algorithm-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .flow-box {
+            flex: 1;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .flow-box.decision {
+            background: linear-gradient(135deg, var(--accent-dim), rgba(139, 92, 246, 0.1));
+            border: 1px solid var(--accent);
+        }
+
+        .flow-box.action {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .flow-box.action.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        .flow-arrow {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+        }
+
+        .flow-branch {
+            display: flex;
+            gap: 1rem;
+            padding-left: 2rem;
+        }
+
+        .flow-branch .flow-box {
+            flex: 1;
+        }
+
+        /* Code Section */
+        .code-container {
+            position: relative;
+            margin: 2rem 0;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e1e28;
+            padding: 0.75rem 1rem;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+
+        .code-filename {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .code-copy {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .code-copy:hover {
+            transform: scale(1.05);
+        }
+
+        .code-copy.copied {
+            background: var(--success);
+        }
+
+        pre {
+            margin: 0;
+            border-radius: 0 0 12px 12px;
+            border: 1px solid var(--border);
+            border-top: none;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        pre code {
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        /* Code Explanation */
+        .code-explanation {
+            margin-top: 2rem;
+        }
+
+        .code-line {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .code-line:hover {
+            border-color: var(--accent);
+        }
+
+        .line-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .line-content h4 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .line-content h4 code {
+            background: var(--bg-code);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .line-content p {
+            color: var(--text-secondary);
+        }
+
+        /* Concepts Grid */
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .concept-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .concept-card h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concept-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .concept-card code {
+            background: var(--bg-code);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Simulator */
+        .simulator-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .simulator-header {
+            padding: 1rem 1.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .simulator-header h4 {
+            color: var(--accent);
+        }
+
+        .simulator-header a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .simulator-header a:hover {
+            color: var(--accent);
+        }
+
+        .simulator-embed {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Troubleshooting Section */
+        .troubleshooting {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .troubleshooting h4 {
+            color: var(--danger);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .trouble-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .trouble-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 8px;
+        }
+
+        .trouble-problem {
+            color: var(--danger);
+            font-weight: 500;
+        }
+
+        .trouble-solution {
+            color: var(--success);
+        }
+
+        /* Steps Timeline */
+        .steps-timeline {
+            position: relative;
+            margin: 2rem 0;
+            padding-left: 3rem;
+        }
+
+        .steps-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .step {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .step:last-child {
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            position: absolute;
+            left: -3rem;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .step-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .step-content h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+        }
+
+        .step-tip {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--accent-dim);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .step-tip strong {
+            color: var(--accent);
+        }
+
+        .step-tip.warning {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .step-tip.warning strong {
+            color: var(--warning);
+        }
+
+        /* Experiments Grid */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--accent);
+        }
+
+        .experiment-difficulty {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-card h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* LEGO Section */
+        .lego-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .lego-section h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lego-ideas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .lego-idea {
+            background: rgba(99, 102, 241, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .lego-idea span {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Navigation */
+        .project-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 3rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .nav-button:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .nav-button-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-button-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-button-title {
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-text {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-meta {
+                gap: 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .code-line {
+                grid-template-columns: 1fr;
+            }
+
+            .line-number {
+                width: auto;
+                padding: 0.5rem 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .project-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .trouble-item {
+                grid-template-columns: 1fr;
+            }
+
+            .hbridge-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="../index.html" class="nav-logo orbitron">EIGENROBOTICS</a>
+        <div class="nav-links">
+            <a href="#resultado">Resultado</a>
+            <a href="#hardware">Hardware</a>
+            <a href="#codigo">Codigo</a>
+            <a href="#simulador">Simulador</a>
+            <a href="#pasos">Paso a paso</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <span class="hero-badge">
+            <span class="star">*</span>
+            Nivel 3 - Movimiento
+            <span class="star">*</span>
+        </span>
+        <h1 class="hero-title orbitron">P5: ROBOT EXPLORADOR</h1>
+        <p class="hero-subtitle">
+            El proyecto culminante: un robot autonomo que navega evitando obstaculos.
+            Integra todo lo aprendido: sensores, motores, logica de decision y control PWM.
+        </p>
+        <div class="hero-meta">
+            <div class="meta-item">
+                <div class="meta-value orbitron">90</div>
+                <div class="meta-label">Minutos</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-value orbitron">10</div>
+                <div class="meta-label">Componentes</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-value orbitron">175</div>
+                <div class="meta-label">Lineas de codigo</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Resultado Section -->
+        <section class="section" id="resultado">
+            <div class="section-header">
+                <div class="section-number">01</div>
+                <h2 class="section-title">Que vamos a conseguir?</h2>
+                <p class="section-intro">
+                    Un robot movil que avanza autonomamente, detecta obstaculos con ultrasonido,
+                    y gira para evitarlos. Construido sobre un chasis LEGO Technic.
+                </p>
+            </div>
+
+            <div class="result-grid">
+                <div class="result-visual">
+                    <div class="robot-demo">
+                        <div class="arena">
+                            <div class="obstacle obs1"></div>
+                            <div class="obstacle obs2"></div>
+                            <div class="obstacle obs3"></div>
+                        </div>
+                        <div class="robot" id="robot">
+                            <div class="sensor-beam"></div>
+                            <div class="robot-sensor">
+                                <div class="eye"></div>
+                                <div class="eye"></div>
+                            </div>
+                            <div class="robot-body"></div>
+                            <div class="robot-wheel left"></div>
+                            <div class="robot-wheel right"></div>
+                        </div>
+                    </div>
+                    <div class="robot-status">
+                        <span class="status-indicator">
+                            <span class="status-dot" id="status-dot"></span>
+                            <span id="status-text">Explorando...</span>
+                        </span>
+                    </div>
+                    <div class="demo-controls">
+                        <button class="demo-btn active" id="btn-auto">Auto</button>
+                        <button class="demo-btn" id="btn-forward">Avanzar</button>
+                        <button class="demo-btn" id="btn-left">Izquierda</button>
+                        <button class="demo-btn" id="btn-right">Derecha</button>
+                        <button class="demo-btn" id="btn-stop">Parar</button>
+                    </div>
+                </div>
+                <div class="result-text">
+                    <h3>Lo que aprenderas:</h3>
+                    <ul class="result-list">
+                        <li>
+                            <span class="result-icon">1</span>
+                            <span>Controlar motores DC con el driver L298N</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">2</span>
+                            <span>Usar PWM para controlar velocidad de motores</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">3</span>
+                            <span>Crear algoritmo de navegacion autonoma</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">4</span>
+                            <span>Integrar multiples subsistemas (sensores + actuadores)</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">5</span>
+                            <span>Manejar alimentacion separada para motores</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hardware Section -->
+        <section class="section" id="hardware">
+            <div class="section-header">
+                <div class="section-number">02</div>
+                <h2 class="section-title">Hardware necesario</h2>
+                <p class="section-intro">
+                    Este proyecto requiere componentes adicionales al kit basico: motores DC, driver L298N y pilas.
+                </p>
+            </div>
+
+            <!-- Warning Box -->
+            <div class="warning-box">
+                <h4>Importante: Alimentacion separada</h4>
+                <p>
+                    Los motores consumen mucha corriente (hasta 1A cada uno). Arduino NO puede alimentarlos directamente.
+                    Necesitas:
+                </p>
+                <ul>
+                    <li>Portapilas 4xAA (6V) o bateria 9V para los motores (conectar al L298N)</li>
+                    <li>Arduino alimentado por USB o su propia bateria</li>
+                    <li><strong>GND comun</strong>: conectar GND de pilas con GND de Arduino</li>
+                </ul>
+            </div>
+
+            <div class="components-grid">
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="16" width="48" height="32" rx="2" fill="#0d9488" stroke="#14b8a6" stroke-width="2"/>
+                        <rect x="12" y="20" width="8" height="8" fill="#1e1e1e"/>
+                        <circle cx="52" cy="24" r="2" fill="#ef4444"/>
+                    </svg>
+                    <div class="component-name">Arduino UNO</div>
+                    <div class="component-desc">El cerebro</div>
+                </div>
+
+                <div class="component-card highlight">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="12" width="48" height="40" rx="2" fill="#dc2626" stroke="#b91c1c" stroke-width="2"/>
+                        <rect x="12" y="16" width="16" height="12" fill="#1e1e1e"/>
+                        <rect x="36" y="16" width="16" height="12" fill="#1e1e1e"/>
+                        <rect x="4" y="32" width="8" height="8" fill="#64748b"/>
+                        <rect x="52" y="32" width="8" height="8" fill="#64748b"/>
+                        <circle cx="20" cy="44" r="4" fill="#3b82f6"/>
+                        <circle cx="44" cy="44" r="4" fill="#3b82f6"/>
+                    </svg>
+                    <div class="component-name">L298N</div>
+                    <div class="component-desc">Driver de motores</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="22" width="48" height="20" rx="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                        <circle cx="20" cy="32" r="10" fill="#1e1e1e" stroke="#333" stroke-width="2"/>
+                        <circle cx="44" cy="32" r="10" fill="#1e1e1e" stroke="#333" stroke-width="2"/>
+                        <rect x="12" y="20" width="4" height="4" fill="#ef4444"/>
+                        <rect x="48" y="20" width="4" height="4" fill="#1e1e1e"/>
+                    </svg>
+                    <div class="component-name">2x Motor DC</div>
+                    <div class="component-desc">Motores TT 3-6V</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <circle cx="32" cy="32" r="20" fill="#1e1e1e" stroke="#333" stroke-width="2"/>
+                        <circle cx="32" cy="32" r="14" fill="#333"/>
+                        <circle cx="32" cy="32" r="6" fill="#64748b"/>
+                    </svg>
+                    <div class="component-name">2x Rueda</div>
+                    <div class="component-desc">Para motor TT</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="20" width="48" height="24" rx="2" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+                        <circle cx="22" cy="32" r="8" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                        <circle cx="42" cy="32" r="8" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                    </svg>
+                    <div class="component-name">HC-SR04</div>
+                    <div class="component-desc">Sensor ultrasonido</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="12" y="16" width="40" height="32" rx="2" fill="#374151" stroke="#4b5563" stroke-width="2"/>
+                        <rect x="16" y="20" width="14" height="24" rx="1" fill="#fbbf24" stroke="#f59e0b"/>
+                        <rect x="34" y="20" width="14" height="24" rx="1" fill="#fbbf24" stroke="#f59e0b"/>
+                    </svg>
+                    <div class="component-name">4x Pilas AA</div>
+                    <div class="component-desc">+ Portapilas</div>
+                </div>
+            </div>
+
+            <!-- L298N Diagram -->
+            <div class="l298n-diagram">
+                <h4>El driver L298N - Puente H dual</h4>
+                <svg class="l298n-svg" viewBox="0 0 650 320" fill="none">
+                    <!-- L298N Board -->
+                    <rect x="175" y="40" width="300" height="200" rx="8" fill="#dc2626" stroke="#b91c1c" stroke-width="2"/>
+                    <text x="325" y="70" text-anchor="middle" fill="white" font-size="14" font-weight="bold">L298N</text>
+
+                    <!-- Heat sink -->
+                    <rect x="280" y="80" width="90" height="60" fill="#1e1e1e" stroke="#333" stroke-width="1"/>
+                    <line x1="290" y1="80" x2="290" y2="140" stroke="#333"/>
+                    <line x1="310" y1="80" x2="310" y2="140" stroke="#333"/>
+                    <line x1="330" y1="80" x2="330" y2="140" stroke="#333"/>
+                    <line x1="350" y1="80" x2="350" y2="140" stroke="#333"/>
+
+                    <!-- Motor A terminals -->
+                    <rect x="185" y="160" width="25" height="30" fill="#1e1e1e" stroke="#333"/>
+                    <rect x="215" y="160" width="25" height="30" fill="#1e1e1e" stroke="#333"/>
+                    <text x="210" y="210" text-anchor="middle" fill="white" font-size="10">MOTOR A</text>
+
+                    <!-- Motor B terminals -->
+                    <rect x="410" y="160" width="25" height="30" fill="#1e1e1e" stroke="#333"/>
+                    <rect x="440" y="160" width="25" height="30" fill="#1e1e1e" stroke="#333"/>
+                    <text x="435" y="210" text-anchor="middle" fill="white" font-size="10">MOTOR B</text>
+
+                    <!-- Power terminals -->
+                    <rect x="280" y="160" width="30" height="30" fill="#1e1e1e" stroke="#333"/>
+                    <text x="295" y="180" text-anchor="middle" fill="#ef4444" font-size="9">+12V</text>
+
+                    <rect x="315" y="160" width="30" height="30" fill="#1e1e1e" stroke="#333"/>
+                    <text x="330" y="180" text-anchor="middle" fill="#64748b" font-size="9">GND</text>
+
+                    <rect x="350" y="160" width="30" height="30" fill="#1e1e1e" stroke="#333"/>
+                    <text x="365" y="180" text-anchor="middle" fill="#22c55e" font-size="9">+5V</text>
+
+                    <!-- Control pins -->
+                    <g transform="translate(225, 250)">
+                        <rect x="0" y="0" width="20" height="15" fill="#1e1e1e" stroke="#333"/>
+                        <text x="10" y="30" text-anchor="middle" fill="#f97316" font-size="8">ENA</text>
+
+                        <rect x="30" y="0" width="20" height="15" fill="#1e1e1e" stroke="#333"/>
+                        <text x="40" y="30" text-anchor="middle" fill="#8b5cf6" font-size="8">IN1</text>
+
+                        <rect x="60" y="0" width="20" height="15" fill="#1e1e1e" stroke="#333"/>
+                        <text x="70" y="30" text-anchor="middle" fill="#8b5cf6" font-size="8">IN2</text>
+
+                        <rect x="100" y="0" width="20" height="15" fill="#1e1e1e" stroke="#333"/>
+                        <text x="110" y="30" text-anchor="middle" fill="#8b5cf6" font-size="8">IN3</text>
+
+                        <rect x="130" y="0" width="20" height="15" fill="#1e1e1e" stroke="#333"/>
+                        <text x="140" y="30" text-anchor="middle" fill="#8b5cf6" font-size="8">IN4</text>
+
+                        <rect x="160" y="0" width="20" height="15" fill="#1e1e1e" stroke="#333"/>
+                        <text x="170" y="30" text-anchor="middle" fill="#f97316" font-size="8">ENB</text>
+                    </g>
+
+                    <!-- Labels -->
+                    <text x="50" y="180" fill="#fbbf24" font-size="11">Motor</text>
+                    <text x="50" y="195" fill="#fbbf24" font-size="11">Izquierdo</text>
+
+                    <text x="550" y="180" fill="#fbbf24" font-size="11">Motor</text>
+                    <text x="550" y="195" fill="#fbbf24" font-size="11">Derecho</text>
+
+                    <!-- Arrows to motors -->
+                    <path d="M175 175 L120 175" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    <path d="M475 175 L530 175" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+                    <!-- Power input arrow -->
+                    <path d="M295 160 L295 130" stroke="#ef4444" stroke-width="2"/>
+                    <text x="295" y="120" text-anchor="middle" fill="#ef4444" font-size="9">6-12V Pilas</text>
+
+                    <!-- Legend -->
+                    <rect x="20" y="260" width="150" height="50" rx="4" fill="#1a1a24" stroke="#333"/>
+                    <text x="30" y="280" fill="#f97316" font-size="10">ENA/ENB: Velocidad (PWM)</text>
+                    <text x="30" y="298" fill="#8b5cf6" font-size="10">IN1-IN4: Direccion</text>
+
+                    <!-- Arrowhead marker -->
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24"/>
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+
+            <!-- H-Bridge States -->
+            <div class="hbridge-section">
+                <h4>Control de direccion con el Puente H</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Cada motor tiene 2 pines de direccion (INx). Combinandolos, controlamos el sentido de giro:
+                </p>
+                <div class="hbridge-grid">
+                    <div class="hbridge-state">
+                        <h5>Adelante</h5>
+                        <div class="pins">IN1=HIGH, IN2=LOW</div>
+                        <div class="arrow">&#x2191;</div>
+                    </div>
+                    <div class="hbridge-state">
+                        <h5>Atras</h5>
+                        <div class="pins">IN1=LOW, IN2=HIGH</div>
+                        <div class="arrow">&#x2193;</div>
+                    </div>
+                    <div class="hbridge-state">
+                        <h5>Freno</h5>
+                        <div class="pins">IN1=LOW, IN2=LOW</div>
+                        <div class="arrow">&#x25A0;</div>
+                    </div>
+                    <div class="hbridge-state">
+                        <h5>Freno</h5>
+                        <div class="pins">IN1=HIGH, IN2=HIGH</div>
+                        <div class="arrow">&#x25A0;</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Circuit Diagram -->
+            <div class="circuit-diagram">
+                <h4>Diagrama de conexion completo</h4>
+                <svg class="circuit-svg" viewBox="0 0 800 450" fill="none">
+                    <!-- Arduino Board -->
+                    <rect x="20" y="120" width="160" height="200" rx="8" fill="#0d9488" stroke="#14b8a6" stroke-width="2"/>
+                    <text x="100" y="225" text-anchor="middle" fill="white" font-size="12" font-weight="bold">ARDUINO</text>
+                    <text x="100" y="240" text-anchor="middle" fill="white" font-size="12" font-weight="bold">UNO</text>
+
+                    <!-- Arduino pins -->
+                    <g transform="translate(170, 130)">
+                        <rect x="0" y="0" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="10" text-anchor="middle" fill="#f97316" font-size="7">~5</text>
+
+                        <rect x="0" y="20" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="30" text-anchor="middle" fill="#8b5cf6" font-size="7">4</text>
+
+                        <rect x="0" y="40" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="50" text-anchor="middle" fill="#8b5cf6" font-size="7">3</text>
+
+                        <rect x="0" y="60" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="70" text-anchor="middle" fill="#f97316" font-size="7">~6</text>
+
+                        <rect x="0" y="80" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="90" text-anchor="middle" fill="#8b5cf6" font-size="7">7</text>
+
+                        <rect x="0" y="100" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="110" text-anchor="middle" fill="#8b5cf6" font-size="7">8</text>
+
+                        <rect x="0" y="130" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="140" text-anchor="middle" fill="#22c55e" font-size="7">9</text>
+
+                        <rect x="0" y="150" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="160" text-anchor="middle" fill="#06b6d4" font-size="7">10</text>
+
+                        <rect x="0" y="180" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="190" text-anchor="middle" fill="#64748b" font-size="7">GND</text>
+                    </g>
+
+                    <!-- L298N Board -->
+                    <rect x="300" y="80" width="200" height="280" rx="8" fill="#dc2626" stroke="#b91c1c" stroke-width="2"/>
+                    <text x="400" y="110" text-anchor="middle" fill="white" font-size="14" font-weight="bold">L298N</text>
+
+                    <!-- L298N pins left side -->
+                    <g transform="translate(275, 140)">
+                        <rect x="0" y="0" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="10" text-anchor="middle" fill="#f97316" font-size="7">ENA</text>
+
+                        <rect x="0" y="25" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="35" text-anchor="middle" fill="#8b5cf6" font-size="7">IN1</text>
+
+                        <rect x="0" y="50" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="60" text-anchor="middle" fill="#8b5cf6" font-size="7">IN2</text>
+
+                        <rect x="0" y="85" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="95" text-anchor="middle" fill="#f97316" font-size="7">ENB</text>
+
+                        <rect x="0" y="110" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="120" text-anchor="middle" fill="#8b5cf6" font-size="7">IN3</text>
+
+                        <rect x="0" y="135" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="145" text-anchor="middle" fill="#8b5cf6" font-size="7">IN4</text>
+
+                        <rect x="0" y="180" width="25" height="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="12" y="190" text-anchor="middle" fill="#64748b" font-size="7">GND</text>
+                    </g>
+
+                    <!-- L298N motor outputs -->
+                    <g transform="translate(500, 160)">
+                        <rect x="0" y="0" width="25" height="12" fill="#fbbf24"/>
+                        <rect x="0" y="20" width="25" height="12" fill="#fbbf24"/>
+                        <text x="40" y="18" fill="#fbbf24" font-size="9">Motor A</text>
+
+                        <rect x="0" y="70" width="25" height="12" fill="#fbbf24"/>
+                        <rect x="0" y="90" width="25" height="12" fill="#fbbf24"/>
+                        <text x="40" y="88" fill="#fbbf24" font-size="9">Motor B</text>
+                    </g>
+
+                    <!-- L298N power -->
+                    <g transform="translate(350, 320)">
+                        <rect x="0" y="0" width="25" height="12" fill="#ef4444"/>
+                        <text x="12" y="25" text-anchor="middle" fill="#ef4444" font-size="8">+V</text>
+
+                        <rect x="35" y="0" width="25" height="12" fill="#333"/>
+                        <text x="47" y="25" text-anchor="middle" fill="#64748b" font-size="8">GND</text>
+
+                        <rect x="70" y="0" width="25" height="12" fill="#22c55e"/>
+                        <text x="82" y="25" text-anchor="middle" fill="#22c55e" font-size="8">5V</text>
+                    </g>
+
+                    <!-- Wires Arduino to L298N -->
+                    <path d="M195 136 L275 140" stroke="#f97316" stroke-width="2"/>
+                    <path d="M195 156 L275 165" stroke="#8b5cf6" stroke-width="2"/>
+                    <path d="M195 176 L275 190" stroke="#8b5cf6" stroke-width="2"/>
+                    <path d="M195 196 L275 225" stroke="#f97316" stroke-width="2"/>
+                    <path d="M195 216 L275 250" stroke="#8b5cf6" stroke-width="2"/>
+                    <path d="M195 236 L275 275" stroke="#8b5cf6" stroke-width="2"/>
+
+                    <!-- Motors -->
+                    <g transform="translate(600, 140)">
+                        <rect x="0" y="0" width="70" height="40" rx="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                        <circle cx="15" cy="20" r="12" fill="#1e1e1e" stroke="#333"/>
+                        <circle cx="55" cy="20" r="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="35" y="55" text-anchor="middle" fill="#64748b" font-size="9">IZQUIERDO</text>
+                    </g>
+
+                    <g transform="translate(600, 220)">
+                        <rect x="0" y="0" width="70" height="40" rx="4" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>
+                        <circle cx="15" cy="20" r="12" fill="#1e1e1e" stroke="#333"/>
+                        <circle cx="55" cy="20" r="12" fill="#1e1e1e" stroke="#333"/>
+                        <text x="35" y="55" text-anchor="middle" fill="#64748b" font-size="9">DERECHO</text>
+                    </g>
+
+                    <!-- Motor wires -->
+                    <path d="M525 166 L600 155" stroke="#fbbf24" stroke-width="2"/>
+                    <path d="M525 178 L600 165" stroke="#fbbf24" stroke-width="2"/>
+                    <path d="M525 236 L600 235" stroke="#fbbf24" stroke-width="2"/>
+                    <path d="M525 248 L600 245" stroke="#fbbf24" stroke-width="2"/>
+
+                    <!-- HC-SR04 -->
+                    <rect x="600" y="320" width="100" height="50" rx="4" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+                    <circle cx="625" cy="345" r="12" fill="#94a3b8" stroke="#64748b"/>
+                    <circle cx="675" cy="345" r="12" fill="#94a3b8" stroke="#64748b"/>
+                    <text x="650" y="385" text-anchor="middle" fill="#64748b" font-size="9">HC-SR04</text>
+
+                    <!-- Wires to HC-SR04 -->
+                    <path d="M195 266 L250 266 L250 335 L600 335" stroke="#22c55e" stroke-width="2"/>
+                    <path d="M195 286 L240 286 L240 350 L600 350" stroke="#06b6d4" stroke-width="2"/>
+
+                    <!-- Battery pack -->
+                    <rect x="300" y="380" width="120" height="50" rx="4" fill="#374151" stroke="#4b5563" stroke-width="2"/>
+                    <text x="360" y="410" text-anchor="middle" fill="white" font-size="10">4x AA (6V)</text>
+                    <path d="M362 380 L362 340 L350 332" stroke="#ef4444" stroke-width="2"/>
+                    <path d="M385 380 L385 340 L385 332" stroke="#333" stroke-width="2"/>
+
+                    <!-- GND connection -->
+                    <path d="M195 316 L275 320" stroke="#333" stroke-width="2"/>
+
+                    <!-- Legend -->
+                    <rect x="20" y="380" width="200" height="60" rx="4" fill="#1a1a24" stroke="#333"/>
+                    <text x="30" y="400" fill="#f97316" font-size="9">~5, ~6: PWM velocidad</text>
+                    <text x="30" y="415" fill="#8b5cf6" font-size="9">3,4,7,8: Direccion motores</text>
+                    <text x="30" y="430" fill="#06b6d4" font-size="9">9,10: HC-SR04 (ECHO, TRIG)</text>
+                </svg>
+            </div>
+
+            <!-- Explanation Cards -->
+            <div class="explanation-card">
+                <h4>
+                    <span>Por que necesitamos el L298N?</span>
+                </h4>
+                <p>
+                    Arduino solo puede dar <span class="highlight">40mA por pin</span>.
+                    Un motor DC puede consumir <span class="highlight">200-800mA</span>.
+                    El L298N actua como "amplificador": recibe senales pequenas de Arduino
+                    y controla la corriente grande que va a los motores desde las pilas.
+                </p>
+            </div>
+
+            <div class="explanation-card">
+                <h4>
+                    <span>GND comun: la regla de oro</span>
+                </h4>
+                <p>
+                    Cuando usas dos fuentes de alimentacion (USB para Arduino, pilas para motores),
+                    <strong>SIEMPRE</strong> conecta los GND entre si. Sin esto, las senales no tienen
+                    referencia comun y nada funcionara. Es el error #1 en proyectos de robotica.
+                </p>
+            </div>
+
+            <!-- Algorithm -->
+            <div class="algorithm-section">
+                <h4>Algoritmo de navegacion</h4>
+                <div class="algorithm-flow">
+                    <div class="flow-step">
+                        <div class="flow-box">Medir distancia</div>
+                    </div>
+                    <div class="flow-arrow">&#x2193;</div>
+                    <div class="flow-step">
+                        <div class="flow-box decision">Distancia > 20cm ?</div>
+                    </div>
+                    <div class="flow-branch">
+                        <div class="flow-box action">SI: Avanzar</div>
+                        <div class="flow-box action warning">NO: Parar + Girar</div>
+                    </div>
+                    <div class="flow-arrow">&#x2193;</div>
+                    <div class="flow-step">
+                        <div class="flow-box">Repetir (loop)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LEGO Ideas -->
+            <div class="lego-section">
+                <h4>Ideas para el chasis LEGO Technic</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    LEGO Technic es ideal porque tiene agujeros para ejes y es facil de modificar:
+                </p>
+                <div class="lego-ideas">
+                    <div class="lego-idea">
+                        <span>Tanque</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Oruga o ruedas grandes</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Buggy</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Coche todo terreno</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Wall-E</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Robot con personalidad</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Excavadora</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Con pala decorativa</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section class="section" id="codigo">
+            <div class="section-header">
+                <div class="section-number">03</div>
+                <h2 class="section-title">El codigo explicado</h2>
+                <p class="section-intro">
+                    El codigo mas largo hasta ahora, pero organizado en funciones claras.
+                </p>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-filename mono">p5_robot.ino</span>
+                    <button class="code-copy" onclick="copyCode()">Copiar codigo</button>
+                </div>
+                <pre><code class="language-cpp">// P5: Robot Explorador - EigenRobotics
+
+// --- Pines Motor Izquierdo ---
+const int ENA = 5;   // PWM velocidad
+const int IN1 = 4;   // Direccion
+const int IN2 = 3;   // Direccion
+
+// --- Pines Motor Derecho ---
+const int ENB = 6;   // PWM velocidad
+const int IN3 = 8;   // Direccion
+const int IN4 = 7;   // Direccion
+
+// --- Pines Sensor ---
+const int TRIG = 10;
+const int ECHO = 9;
+
+// --- Configuracion ---
+const int VELOCIDAD = 150;      // 0-255
+const int DISTANCIA_MIN = 20;   // cm
+const int TIEMPO_GIRO = 400;    // ms
+
+void setup() {
+  // Configurar pines de motores
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
+  // Configurar pines de sensor
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+
+  Serial.begin(9600);
+  Serial.println("Robot Explorador listo!");
+
+  delay(2000);  // Esperar antes de arrancar
+}
+
+void loop() {
+  int distancia = medirDistancia();
+
+  Serial.print("Distancia: ");
+  Serial.print(distancia);
+  Serial.println(" cm");
+
+  if (distancia > DISTANCIA_MIN || distancia == 0) {
+    avanzar();
+  } else {
+    parar();
+    delay(200);
+    girarDerecha();
+    delay(TIEMPO_GIRO);
+    parar();
+    delay(100);
+  }
+
+  delay(50);
+}
+
+// ========== FUNCIONES DE MOVIMIENTO ==========
+
+void avanzar() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, VELOCIDAD);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, VELOCIDAD);
+}
+
+void retroceder() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, VELOCIDAD);
+
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENB, VELOCIDAD);
+}
+
+void girarDerecha() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  analogWrite(ENA, VELOCIDAD);
+
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENB, VELOCIDAD);
+}
+
+void girarIzquierda() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  analogWrite(ENA, VELOCIDAD);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENB, VELOCIDAD);
+}
+
+void parar() {
+  analogWrite(ENA, 0);
+  analogWrite(ENB, 0);
+}
+
+// ========== FUNCION DE SENSOR ==========
+
+int medirDistancia() {
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+
+  long duracion = pulseIn(ECHO, HIGH, 30000);
+
+  if (duracion == 0) return 0;
+
+  return duracion / 58;
+}</code></pre>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem; color: var(--accent);">Explicacion de las partes clave:</h3>
+
+            <div class="code-explanation">
+                <div class="code-line">
+                    <div class="line-number">1</div>
+                    <div class="line-content">
+                        <h4><code>ENA, ENB - Enable pins</code></h4>
+                        <p>
+                            Los pines <strong>Enable</strong> controlan la velocidad con PWM (0-255).
+                            Si ENA=0, el motor A no gira aunque IN1/IN2 esten activos.
+                            Usamos pines con <code>~</code> (PWM): 5 y 6.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">2</div>
+                    <div class="line-content">
+                        <h4><code>IN1, IN2, IN3, IN4 - Direction pins</code></h4>
+                        <p>
+                            Controlan la <strong>direccion</strong> de cada motor.
+                            IN1=HIGH + IN2=LOW = adelante. IN1=LOW + IN2=HIGH = atras.
+                            No necesitan ser PWM, solo digitales.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">3</div>
+                    <div class="line-content">
+                        <h4><code>distancia == 0</code></h4>
+                        <p>
+                            Cuando el sensor no recibe eco (objeto muy lejos o error), <code>pulseIn</code>
+                            devuelve 0. Lo tratamos como "camino libre" porque no hay obstaculo cercano.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">4</div>
+                    <div class="line-content">
+                        <h4><code>girarDerecha()</code></h4>
+                        <p>
+                            Para girar sobre si mismo: un motor adelante, otro atras.
+                            Motor izquierdo adelante + motor derecho atras = giro a la derecha.
+                            Es como un tanque: las orugas van en direcciones opuestas.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">5</div>
+                    <div class="line-content">
+                        <h4><code>delay(TIEMPO_GIRO)</code></h4>
+                        <p>
+                            Controlamos <strong>cuanto gira</strong> con el tiempo, no con grados.
+                            400ms suele ser ~90 grados, pero depende de la velocidad y el suelo.
+                            Ajustalo experimentalmente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Concepts -->
+            <h3 style="margin: 3rem 0 1rem;">Conceptos clave:</h3>
+            <div class="concepts-grid">
+                <div class="concept-card">
+                    <h4>Control diferencial</h4>
+                    <p>
+                        Robots con 2 ruedas independientes giran variando la velocidad/direccion
+                        de cada motor. Adelante+Adelante=recto, Adelante+Atras=giro.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>PWM para velocidad</h4>
+                    <p>
+                        <code>analogWrite(ENA, 100)</code> = ~40% velocidad.
+                        <code>analogWrite(ENA, 255)</code> = 100% velocidad.
+                        Empieza bajo y sube gradualmente.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Organizacion del codigo</h4>
+                    <p>
+                        Funciones como <code>avanzar()</code>, <code>parar()</code> hacen el
+                        <code>loop()</code> legible. Cada funcion hace UNA cosa bien.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Delay de seguridad</h4>
+                    <p>
+                        Los <code>delay()</code> entre acciones evitan cambios bruscos
+                        que pueden dañar motores o hacer que el robot "salte".
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulator Section -->
+        <section class="section" id="simulador">
+            <div class="section-header">
+                <div class="section-number">04</div>
+                <h2 class="section-title">Simulador interactivo</h2>
+                <p class="section-intro">
+                    Wokwi permite simular motores DC y el L298N. Prueba antes de montar.
+                </p>
+            </div>
+
+            <div class="simulator-container">
+                <div class="simulator-header">
+                    <h4>Wokwi Simulator</h4>
+                    <a href="https://wokwi.com/projects/new/arduino-uno" target="_blank">Abrir en Wokwi</a>
+                </div>
+                <iframe
+                    class="simulator-embed"
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    loading="lazy"
+                ></iframe>
+            </div>
+
+            <div class="explanation-card">
+                <h4>
+                    <span>Nota sobre simulacion de motores</span>
+                </h4>
+                <p>
+                    Wokwi tiene componentes para motores DC y L298N, pero el comportamiento
+                    real depende mucho del hardware fisico. Usa el simulador para verificar
+                    la logica, pero ajusta <span class="highlight">VELOCIDAD</span> y
+                    <span class="highlight">TIEMPO_GIRO</span> con el robot real.
+                </p>
+            </div>
+        </section>
+
+        <!-- Steps Section -->
+        <section class="section" id="pasos">
+            <div class="section-header">
+                <div class="section-number">05</div>
+                <h2 class="section-title">Paso a paso</h2>
+                <p class="section-intro">
+                    Monta tu robot en 12 pasos. Toma tu tiempo, verifica cada conexion.
+                </p>
+            </div>
+
+            <div class="steps-timeline">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Construye el chasis LEGO</h4>
+                        <p>
+                            Crea una base rectangular con LEGO Technic. Debe tener espacio para:
+                            motores (laterales), Arduino (arriba), L298N (centro), pilas (abajo o atras).
+                        </p>
+                        <div class="step-tip">
+                            <strong>Tip:</strong> Usa vigas Technic largas para la base. Los agujeros
+                            permiten pasar cables y fijar componentes con bridas.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Monta los motores</h4>
+                        <p>
+                            Fija los motores TT a los lados del chasis. Deben quedar paralelos
+                            y a la misma altura. Las ruedas van hacia afuera.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Anade una rueda loca</h4>
+                        <p>
+                            En la parte delantera o trasera, anade una rueda pequena (ball caster)
+                            o una pieza que se deslice. Esto da estabilidad al robot.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Conecta los motores al L298N</h4>
+                        <p>
+                            Motor izquierdo a terminales OUT1/OUT2. Motor derecho a OUT3/OUT4.
+                            Aprieta bien los tornillos de los terminales.
+                        </p>
+                        <div class="step-tip warning">
+                            <strong>Atencion:</strong> Si luego el robot gira en circulos, un motor
+                            esta invertido. Intercambia los cables de ESE motor en el L298N.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Conecta la alimentacion al L298N</h4>
+                        <p>
+                            Portapilas (+) al terminal +12V del L298N.
+                            Portapilas (-) al terminal GND del L298N.
+                            Si el jumper de 5V esta puesto, el L298N genera 5V para Arduino.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h4>Conecta GND comun</h4>
+                        <p>
+                            Un cable desde GND del L298N a GND de Arduino.
+                            <strong>CRITICO:</strong> Sin esto, nada funcionara.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <h4>Conecta los pines de control</h4>
+                        <p>
+                            ENA - Pin 5, IN1 - Pin 4, IN2 - Pin 3 (motor izquierdo).
+                            ENB - Pin 6, IN3 - Pin 8, IN4 - Pin 7 (motor derecho).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">8</div>
+                    <div class="step-content">
+                        <h4>Monta el HC-SR04</h4>
+                        <p>
+                            Fijalo en la parte delantera, mirando hacia adelante.
+                            TRIG - Pin 10, ECHO - Pin 9, VCC - 5V, GND - GND.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">9</div>
+                    <div class="step-content">
+                        <h4>Sube el codigo (sin pilas)</h4>
+                        <p>
+                            Conecta Arduino por USB. Sube el codigo. NO pongas pilas todavia.
+                            Verifica en el Monitor Serial que el sensor funciona.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">10</div>
+                    <div class="step-content">
+                        <h4>Prueba de motores</h4>
+                        <p>
+                            Pon las pilas. El robot deberia avanzar despues de 2 segundos.
+                            Pon la mano delante: deberia parar y girar.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">11</div>
+                    <div class="step-content">
+                        <h4>Ajusta parametros</h4>
+                        <p>
+                            Si es muy rapido, baja VELOCIDAD. Si gira poco, sube TIEMPO_GIRO.
+                            Si no detecta obstaculos, revisa el sensor o sube DISTANCIA_MIN.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">12</div>
+                    <div class="step-content">
+                        <h4>Construye un laberinto!</h4>
+                        <p>
+                            Usa cajas de carton o libros para crear paredes.
+                            Observa como tu robot navega autonomamente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section class="section" id="troubleshooting">
+            <div class="section-header">
+                <div class="section-number">06</div>
+                <h2 class="section-title">Solucion de problemas</h2>
+                <p class="section-intro">
+                    Los errores mas comunes y como solucionarlos.
+                </p>
+            </div>
+
+            <div class="troubleshooting">
+                <h4>Problemas frecuentes</h4>
+                <div class="trouble-grid">
+                    <div class="trouble-item">
+                        <div class="trouble-problem">Robot no se mueve</div>
+                        <div class="trouble-solution">Verifica pilas, GND comun, y que ENA/ENB > 0</div>
+                    </div>
+                    <div class="trouble-item">
+                        <div class="trouble-problem">Gira en circulos</div>
+                        <div class="trouble-solution">Un motor invertido. Intercambia cables en L298N</div>
+                    </div>
+                    <div class="trouble-item">
+                        <div class="trouble-problem">No detecta obstaculos</div>
+                        <div class="trouble-solution">Revisa TRIG/ECHO. Prueba sensor solo en P3</div>
+                    </div>
+                    <div class="trouble-item">
+                        <div class="trouble-problem">Velocidades diferentes</div>
+                        <div class="trouble-solution">Usa velocidades distintas: ENA=150, ENB=145</div>
+                    </div>
+                    <div class="trouble-item">
+                        <div class="trouble-problem">Motores hacen ruido pero no giran</div>
+                        <div class="trouble-solution">Pilas agotadas o velocidad muy baja. Sube PWM</div>
+                    </div>
+                    <div class="trouble-item">
+                        <div class="trouble-problem">Arduino se reinicia</div>
+                        <div class="trouble-solution">Motores consumen demasiado. Usa pilas nuevas</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section" id="experimentos">
+            <div class="section-header">
+                <div class="section-number">07</div>
+                <h2 class="section-title">Experimentos</h2>
+                <p class="section-intro">
+                    Mejora tu robot con estas ideas.
+                </p>
+            </div>
+
+            <div class="experiments-grid">
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Facil</span>
+                    <h4>Ajusta velocidad</h4>
+                    <p>
+                        Cambia VELOCIDAD de 100 a 200 y observa la diferencia.
+                        Encuentra el equilibrio entre rapidez y control.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Facil</span>
+                    <h4>Giro aleatorio</h4>
+                    <p>
+                        Usa <code>random(0,2)</code> para elegir girar izquierda o derecha.
+                        El robot sera menos predecible.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Medio</span>
+                    <h4>LEDs indicadores</h4>
+                    <p>
+                        LED verde = avanzando. LED rojo = obstaculo.
+                        Ayuda a depurar y queda muy visual.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Medio</span>
+                    <h4>Buzzer de alerta</h4>
+                    <p>
+                        Que suene un beep corto cada vez que detecte obstaculo.
+                        Usa <code>tone()</code> con buzzer pasivo.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Desafio</span>
+                    <h4>Modo seguir pared</h4>
+                    <p>
+                        Manten distancia constante de la pared derecha.
+                        Si te alejas, gira derecha. Si te acercas, gira izquierda.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Desafio</span>
+                    <h4>Sensor lateral</h4>
+                    <p>
+                        Anade un segundo HC-SR04 mirando a un lado.
+                        Permite detectar obstaculos laterales y navegar mejor.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="project-nav">
+            <a href="p4-girasol.html" class="nav-button">
+                <span>&lt;-</span>
+                <div class="nav-button-text">
+                    <span class="nav-button-label">Proyecto anterior</span>
+                    <span class="nav-button-title">P4: Girasol Robot</span>
+                </div>
+            </a>
+            <a href="p6-control-remoto.html" class="nav-button">
+                <div class="nav-button-text" style="text-align: right;">
+                    <span class="nav-button-label">Siguiente proyecto</span>
+                    <span class="nav-button-title">P6: Control Remoto IR</span>
+                </div>
+                <span>-></span>
+            </a>
+        </nav>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-logo orbitron">EIGENROBOTICS</div>
+        <p class="footer-text">Piano piano. Cada proyecto construye sobre el anterior.</p>
+    </footer>
+
+    <script>
+        // Syntax highlighting
+        hljs.highlightAll();
+
+        // Robot demo
+        const robot = document.getElementById('robot');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const buttons = document.querySelectorAll('.demo-btn');
+
+        let robotX = 120;
+        let robotY = 180;
+        let robotAngle = 0;
+        let autoMode = true;
+        let animationId = null;
+
+        function updateRobot() {
+            robot.style.left = robotX + 'px';
+            robot.style.top = robotY + 'px';
+            robot.style.transform = `rotate(${robotAngle}deg)`;
+        }
+
+        function setStatus(status, text) {
+            statusDot.className = 'status-dot ' + status;
+            statusText.textContent = text;
+        }
+
+        function autoExplore() {
+            if (!autoMode) return;
+
+            // Simple random movement
+            const rand = Math.random();
+            if (rand < 0.7) {
+                // Move forward
+                const newX = robotX + Math.sin(robotAngle * Math.PI / 180) * 2;
+                const newY = robotY - Math.cos(robotAngle * Math.PI / 180) * 2;
+
+                // Check bounds
+                if (newX > 20 && newX < 240 && newY > 20 && newY < 240) {
+                    robotX = newX;
+                    robotY = newY;
+                    robot.classList.remove('scanning');
+                    setStatus('', 'Explorando...');
+                } else {
+                    robot.classList.add('scanning');
+                    setStatus('warning', 'Obstaculo!');
+                    robotAngle += 45;
+                }
+            } else {
+                robot.classList.add('scanning');
+                robotAngle += (Math.random() - 0.5) * 30;
+            }
+
+            updateRobot();
+            animationId = setTimeout(autoExplore, 100);
+        }
+
+        function stopAuto() {
+            autoMode = false;
+            if (animationId) {
+                clearTimeout(animationId);
+            }
+        }
+
+        function startAuto() {
+            autoMode = true;
+            autoExplore();
+        }
+
+        // Button handlers
+        document.getElementById('btn-auto').addEventListener('click', () => {
+            buttons.forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-auto').classList.add('active');
+            startAuto();
+        });
+
+        document.getElementById('btn-forward').addEventListener('click', () => {
+            stopAuto();
+            buttons.forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-forward').classList.add('active');
+            setStatus('', 'Avanzando');
+            robotY -= 10;
+            updateRobot();
+        });
+
+        document.getElementById('btn-left').addEventListener('click', () => {
+            stopAuto();
+            buttons.forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-left').classList.add('active');
+            setStatus('', 'Girando izquierda');
+            robotAngle -= 30;
+            updateRobot();
+        });
+
+        document.getElementById('btn-right').addEventListener('click', () => {
+            stopAuto();
+            buttons.forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-right').classList.add('active');
+            setStatus('', 'Girando derecha');
+            robotAngle += 30;
+            updateRobot();
+        });
+
+        document.getElementById('btn-stop').addEventListener('click', () => {
+            stopAuto();
+            buttons.forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-stop').classList.add('active');
+            setStatus('danger', 'Parado');
+        });
+
+        // Initialize
+        updateRobot();
+        autoExplore();
+
+        // Copy code function
+        function copyCode() {
+            const code = document.querySelector('pre code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.code-copy');
+                btn.textContent = 'Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar codigo';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>
