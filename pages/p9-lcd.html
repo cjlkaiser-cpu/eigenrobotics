@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P9: Display LCD - EigenRobotics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #1a1a24;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #8b5cf6;
+            --accent-dim: rgba(139, 92, 246, 0.1);
+            --accent-glow: rgba(139, 92, 246, 0.4);
+            --lcd-green: #39ff14;
+            --lcd-bg: #1a2e1a;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+        }
+
+        .hero-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--lcd-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Content */
+        .content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Result Preview */
+        .result-preview {
+            background: linear-gradient(135deg, var(--bg-card), rgba(139, 92, 246, 0.05));
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--lcd-green), var(--accent));
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-desc {
+            color: var(--text-secondary);
+        }
+
+        /* LCD Visual */
+        .lcd-visual-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .lcd-module {
+            display: inline-block;
+            background: #1a5fb4;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .lcd-screen {
+            background: var(--lcd-bg);
+            border: 4px solid #0a1f0a;
+            border-radius: 4px;
+            padding: 15px 20px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .lcd-row {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .lcd-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .lcd-char {
+            width: 20px;
+            height: 28px;
+            background: var(--lcd-bg);
+            border: 1px solid rgba(57, 255, 20, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--lcd-green);
+            font-size: 18px;
+            text-shadow: 0 0 10px var(--lcd-green);
+        }
+
+        .lcd-label {
+            margin-top: 1rem;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* I2C Advantage */
+        .i2c-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .i2c-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .compare-card {
+            background: var(--bg-code);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .compare-card.bad {
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .compare-card.good {
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .compare-card h4 {
+            margin-bottom: 1rem;
+        }
+
+        .compare-card.bad h4 {
+            color: #ef4444;
+        }
+
+        .compare-card.good h4 {
+            color: #22c55e;
+        }
+
+        .wire-count {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .compare-card.bad .wire-count {
+            color: #ef4444;
+        }
+
+        .compare-card.good .wire-count {
+            color: #22c55e;
+        }
+
+        .compare-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Wiring Diagram */
+        .wiring-simple {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .wiring-svg {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .pin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .pin-table th,
+        .pin-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pin-table th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .pin-table td {
+            color: var(--text-secondary);
+        }
+
+        .pin-label {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .pin-vcc { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .pin-gnd { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+        .pin-sda { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .pin-scl { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+
+        /* I2C Address */
+        .i2c-address-box {
+            background: linear-gradient(135deg, var(--bg-card), rgba(139, 92, 246, 0.05));
+            border: 2px solid var(--accent);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .address-examples {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .address-item {
+            text-align: center;
+            padding: 1rem 2rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+        }
+
+        .address-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .address-note {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Custom Characters */
+        .char-designer {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .char-grid-container {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .char-example {
+            text-align: center;
+        }
+
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            padding: 10px;
+            background: var(--bg-code);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .char-pixel {
+            width: 24px;
+            height: 24px;
+            background: var(--lcd-bg);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .char-pixel.on {
+            background: var(--lcd-green);
+            box-shadow: 0 0 10px var(--lcd-green);
+        }
+
+        .char-name {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Code Preview */
+        .char-code-preview {
+            background: var(--bg-code);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .char-code-preview code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--lcd-green);
+        }
+
+        /* Code Section */
+        .code-block {
+            background: var(--bg-code);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .code-header {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .code-explain {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .code-explain-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .code-explain-line {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 160px;
+        }
+
+        .code-explain-text {
+            color: var(--text-secondary);
+        }
+
+        /* Interactive Demo */
+        .demo-container {
+            background: linear-gradient(135deg, var(--bg-card), rgba(139, 92, 246, 0.05));
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .demo-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .demo-title h3 {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-lcd {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .demo-lcd-module {
+            background: linear-gradient(180deg, #2563eb, #1e40af);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+        }
+
+        .demo-lcd-screen {
+            background: var(--lcd-bg);
+            border: 5px solid #0a1f0a;
+            border-radius: 6px;
+            padding: 20px 25px;
+        }
+
+        .demo-lcd-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .demo-lcd-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .demo-lcd-char {
+            width: 24px;
+            height: 32px;
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--lcd-green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            text-shadow: 0 0 15px var(--lcd-green);
+        }
+
+        .demo-lcd-char.filled {
+            background: rgba(57, 255, 20, 0.15);
+        }
+
+        /* Demo Controls */
+        .demo-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .demo-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .demo-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+        }
+
+        .demo-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .demo-btn {
+            padding: 12px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .demo-btn:hover {
+            background: #7c3aed;
+        }
+
+        .demo-presets {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .preset-btn {
+            padding: 8px 16px;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Library Installation */
+        .library-steps {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .library-step {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .library-step-num {
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .library-step-text {
+            color: var(--text-secondary);
+        }
+
+        .library-step-text strong {
+            color: var(--text-primary);
+        }
+
+        /* Troubleshooting */
+        .troubleshoot-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .troubleshoot-table th,
+        .troubleshoot-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .troubleshoot-table th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .troubleshoot-table td {
+            color: var(--text-secondary);
+        }
+
+        .troubleshoot-table td:first-child {
+            color: #ef4444;
+            font-weight: 500;
+        }
+
+        /* Integration Table */
+        .integration-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .integration-table th,
+        .integration-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .integration-table th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .integration-table td {
+            color: var(--text-secondary);
+        }
+
+        /* Wokwi */
+        .wokwi-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .wokwi-header {
+            background: var(--bg-code);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wokwi-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .wokwi-dot.red { background: #ef4444; }
+        .wokwi-dot.yellow { background: #eab308; }
+        .wokwi-dot.green { background: #22c55e; }
+
+        .wokwi-title {
+            margin-left: auto;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .wokwi-embed {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Steps */
+        .steps-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .step-item:hover {
+            border-color: var(--accent);
+        }
+
+        .step-num {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Experiments */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .experiment-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-card h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .experiment-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tip Box */
+        .tip-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tip-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tip-text {
+            color: var(--text-secondary);
+        }
+
+        .tip-text strong {
+            color: #22c55e;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-copy {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="../index.html" class="nav-logo orbitron">EIGENROBOTICS</a>
+        <div class="nav-links">
+            <a href="#hardware">Hardware</a>
+            <a href="#codigo">Codigo</a>
+            <a href="#demo">Demo</a>
+            <a href="#pasos">Pasos</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-level orbitron">Proyecto 9</div>
+        <h1 class="orbitron">Display LCD</h1>
+        <p class="hero-subtitle">
+            Pantalla retro de 16x2 caracteres. Muestra mensajes,
+            datos de sensores y hasta emojis personalizados.
+        </p>
+    </section>
+
+    <!-- Content -->
+    <main class="content">
+        <!-- Result -->
+        <section class="section">
+            <div class="result-preview">
+                <div class="result-icon">📺</div>
+                <div class="result-text">Tu Arduino Habla</div>
+                <p class="result-desc">Muestra "Hola Mundo", contadores, emojis y datos de otros sensores.</p>
+            </div>
+        </section>
+
+        <!-- LCD Visual -->
+        <section class="section" id="hardware">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2 class="section-title">El Display LCD 16x2</h2>
+            </div>
+
+            <div class="lcd-visual-container">
+                <div class="lcd-module">
+                    <div class="lcd-screen">
+                        <div class="lcd-row">
+                            <div class="lcd-char">E</div>
+                            <div class="lcd-char">i</div>
+                            <div class="lcd-char">g</div>
+                            <div class="lcd-char">e</div>
+                            <div class="lcd-char">n</div>
+                            <div class="lcd-char">R</div>
+                            <div class="lcd-char">o</div>
+                            <div class="lcd-char">b</div>
+                            <div class="lcd-char">o</div>
+                            <div class="lcd-char">t</div>
+                            <div class="lcd-char">i</div>
+                            <div class="lcd-char">c</div>
+                            <div class="lcd-char">s</div>
+                            <div class="lcd-char"></div>
+                            <div class="lcd-char"></div>
+                            <div class="lcd-char"></div>
+                        </div>
+                        <div class="lcd-row">
+                            <div class="lcd-char">H</div>
+                            <div class="lcd-char">o</div>
+                            <div class="lcd-char">l</div>
+                            <div class="lcd-char">a</div>
+                            <div class="lcd-char"></div>
+                            <div class="lcd-char">M</div>
+                            <div class="lcd-char">u</div>
+                            <div class="lcd-char">n</div>
+                            <div class="lcd-char">d</div>
+                            <div class="lcd-char">o</div>
+                            <div class="lcd-char">!</div>
+                            <div class="lcd-char"></div>
+                            <div class="lcd-char">:)</div>
+                            <div class="lcd-char"></div>
+                            <div class="lcd-char"></div>
+                            <div class="lcd-char"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="lcd-label">LCD 16x2: 16 columnas × 2 filas = 32 caracteres</p>
+            </div>
+        </section>
+
+        <!-- I2C Advantage -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2 class="section-title">La Ventaja del I2C</h2>
+            </div>
+
+            <div class="card">
+                <p style="color: var(--text-secondary);">
+                    El LCD normal necesita muchos cables. Con el modulo <strong style="color: var(--accent);">I2C</strong>,
+                    toda la comunicacion va por solo 2 cables de datos. Mucho mas simple.
+                </p>
+
+                <div class="i2c-comparison">
+                    <div class="compare-card bad">
+                        <h4>Sin I2C</h4>
+                        <div class="wire-count">12+</div>
+                        <p>cables de datos, control, alimentacion...</p>
+                    </div>
+                    <div class="compare-card good">
+                        <h4>Con I2C</h4>
+                        <div class="wire-count">4</div>
+                        <p>VCC, GND, SDA, SCL - ¡y listo!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simple Wiring -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2 class="section-title">Conexion Super Simple</h2>
+            </div>
+
+            <div class="wiring-simple">
+                <svg class="wiring-svg" viewBox="0 0 600 300">
+                    <rect width="600" height="300" fill="#12121a"/>
+
+                    <!-- Arduino -->
+                    <g transform="translate(50, 80)">
+                        <rect x="0" y="0" width="150" height="140" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                        <text x="75" y="25" text-anchor="middle" fill="white" font-size="14" font-weight="bold">ARDUINO UNO</text>
+
+                        <!-- Pins -->
+                        <circle cx="140" cy="60" r="8" fill="#ef4444"/>
+                        <text x="125" y="63" text-anchor="end" fill="white" font-size="11">5V</text>
+
+                        <circle cx="140" cy="85" r="8" fill="#6b7280"/>
+                        <text x="125" y="88" text-anchor="end" fill="white" font-size="11">GND</text>
+
+                        <circle cx="140" cy="110" r="8" fill="#3b82f6"/>
+                        <text x="125" y="113" text-anchor="end" fill="white" font-size="11">A4</text>
+
+                        <circle cx="140" cy="135" r="8" fill="#eab308"/>
+                        <text x="125" y="138" text-anchor="end" fill="white" font-size="11">A5</text>
+                    </g>
+
+                    <!-- LCD Module -->
+                    <g transform="translate(380, 60)">
+                        <rect x="0" y="0" width="170" height="180" rx="8" fill="#1a5fb4" stroke="#3b82f6" stroke-width="2"/>
+                        <text x="85" y="25" text-anchor="middle" fill="white" font-size="12" font-weight="bold">LCD 16x2 I2C</text>
+
+                        <!-- Screen -->
+                        <rect x="15" y="35" width="140" height="60" rx="4" fill="#1a2e1a" stroke="#0a1f0a" stroke-width="3"/>
+                        <text x="85" y="60" text-anchor="middle" fill="#39ff14" font-size="10" font-family="monospace">HOLA MUNDO!</text>
+                        <text x="85" y="80" text-anchor="middle" fill="#39ff14" font-size="10" font-family="monospace">:)</text>
+
+                        <!-- I2C Module -->
+                        <rect x="35" y="105" width="100" height="40" rx="4" fill="#1f2937"/>
+                        <text x="85" y="125" text-anchor="middle" fill="#9ca3af" font-size="9">Modulo I2C</text>
+                        <circle cx="110" cy="135" r="8" fill="#374151" stroke="#6b7280"/>
+
+                        <!-- Pins -->
+                        <circle cx="20" cy="160" r="6" fill="#ef4444"/>
+                        <text x="20" y="175" text-anchor="middle" fill="#ef4444" font-size="9">VCC</text>
+
+                        <circle cx="60" cy="160" r="6" fill="#6b7280"/>
+                        <text x="60" y="175" text-anchor="middle" fill="#9ca3af" font-size="9">GND</text>
+
+                        <circle cx="100" cy="160" r="6" fill="#3b82f6"/>
+                        <text x="100" y="175" text-anchor="middle" fill="#3b82f6" font-size="9">SDA</text>
+
+                        <circle cx="140" cy="160" r="6" fill="#eab308"/>
+                        <text x="140" y="175" text-anchor="middle" fill="#eab308" font-size="9">SCL</text>
+                    </g>
+
+                    <!-- Wires -->
+                    <path d="M 198 140 Q 280 140 400 220" stroke="#ef4444" stroke-width="3" fill="none"/>
+                    <path d="M 198 165 Q 300 165 440 220" stroke="#6b7280" stroke-width="3" fill="none"/>
+                    <path d="M 198 190 Q 320 190 480 220" stroke="#3b82f6" stroke-width="3" fill="none"/>
+                    <path d="M 198 215 Q 340 215 520 220" stroke="#eab308" stroke-width="3" fill="none"/>
+
+                    <!-- Title -->
+                    <text x="300" y="280" text-anchor="middle" fill="#8b5cf6" font-size="12" font-weight="bold">Solo 4 cables!</text>
+                </svg>
+
+                <table class="pin-table">
+                    <thead>
+                        <tr>
+                            <th>Pin LCD</th>
+                            <th>Pin Arduino</th>
+                            <th>Funcion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="pin-label pin-vcc">VCC</span></td>
+                            <td>5V</td>
+                            <td>Alimentacion</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pin-label pin-gnd">GND</span></td>
+                            <td>GND</td>
+                            <td>Tierra</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pin-label pin-sda">SDA</span></td>
+                            <td>A4</td>
+                            <td>Datos I2C</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pin-label pin-scl">SCL</span></td>
+                            <td>A5</td>
+                            <td>Reloj I2C</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- I2C Address -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2 class="section-title">Direccion I2C</h2>
+            </div>
+
+            <div class="i2c-address-box">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Cada dispositivo I2C tiene una "direccion" unica. El LCD suele usar una de estas dos:
+                </p>
+
+                <div class="address-examples">
+                    <div class="address-item">
+                        <div class="address-code">0x27</div>
+                        <div class="address-note">La mas comun</div>
+                    </div>
+                    <div class="address-item">
+                        <div class="address-code">0x3F</div>
+                        <div class="address-note">Algunos modelos</div>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-text">
+                        <strong>Si no funciona:</strong> El codigo incluye un escaner I2C. Descomentalo, abre el Monitor Serial y veras la direccion real de tu LCD.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Custom Characters -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2 class="section-title">Caracteres Personalizados</h2>
+            </div>
+
+            <div class="char-designer">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Puedes crear hasta <strong style="color: var(--accent);">8 caracteres</strong> personalizados.
+                    Cada uno es una cuadricula de 5×8 pixeles. ¡Dibuja caritas, iconos o lo que quieras!
+                </p>
+
+                <div class="char-grid-container">
+                    <!-- Happy Face -->
+                    <div class="char-example">
+                        <div class="char-grid" id="charHappy">
+                            <!-- Row 0 --> <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <!-- Row 1 --> <div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div>
+                            <!-- Row 2 --> <div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div>
+                            <!-- Row 3 --> <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <!-- Row 4 --> <div class="char-pixel on"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel on"></div>
+                            <!-- Row 5 --> <div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel"></div>
+                            <!-- Row 6 --> <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <!-- Row 7 --> <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                        </div>
+                        <div class="char-name">Carita Feliz</div>
+                    </div>
+
+                    <!-- Sad Face -->
+                    <div class="char-example">
+                        <div class="char-grid" id="charSad">
+                            <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel"></div>
+                            <div class="char-pixel on"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel on"></div>
+                            <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                        </div>
+                        <div class="char-name">Carita Triste</div>
+                    </div>
+
+                    <!-- Heart -->
+                    <div class="char-example">
+                        <div class="char-grid" id="charHeart">
+                            <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div>
+                            <div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div>
+                            <div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div>
+                            <div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel on"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel on"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                            <div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div><div class="char-pixel"></div>
+                        </div>
+                        <div class="char-name">Corazon</div>
+                    </div>
+                </div>
+
+                <div class="char-code-preview">
+                    <code>byte caritaFeliz[] = {<br>
+                    &nbsp;&nbsp;B00000,<br>
+                    &nbsp;&nbsp;B01010,<br>
+                    &nbsp;&nbsp;B01010,<br>
+                    &nbsp;&nbsp;B00000,<br>
+                    &nbsp;&nbsp;B10001,<br>
+                    &nbsp;&nbsp;B01110,<br>
+                    &nbsp;&nbsp;B00000,<br>
+                    &nbsp;&nbsp;B00000<br>
+                    };</code>
+                </div>
+            </div>
+        </section>
+
+        <!-- Library Installation -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2 class="section-title">Instalar Libreria</h2>
+            </div>
+
+            <div class="card">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Necesitas la libreria <strong style="color: var(--accent);">LiquidCrystal_I2C</strong> para comunicarte con el LCD.
+                </p>
+
+                <div class="library-steps">
+                    <div class="library-step">
+                        <div class="library-step-num">1</div>
+                        <div class="library-step-text">
+                            Arduino IDE → <strong>Tools → Manage Libraries...</strong>
+                        </div>
+                    </div>
+                    <div class="library-step">
+                        <div class="library-step-num">2</div>
+                        <div class="library-step-text">
+                            Buscar <strong>"LiquidCrystal I2C"</strong>
+                        </div>
+                    </div>
+                    <div class="library-step">
+                        <div class="library-step-num">3</div>
+                        <div class="library-step-text">
+                            Instalar la de <strong>Frank de Brabander</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section class="section" id="codigo">
+            <div class="section-header">
+                <div class="section-number">7</div>
+                <h2 class="section-title">El Codigo</h2>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-filename">p9_lcd.ino</span>
+                </div>
+                <pre><code class="language-cpp">#include &lt;Wire.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
+
+// Direccion I2C (prueba 0x27 o 0x3F)
+const int LCD_ADDR = 0x27;
+
+// Inicializar LCD: direccion, columnas, filas
+LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);
+
+// Caracter personalizado
+byte caritaFeliz[] = {
+  B00000, B01010, B01010, B00000,
+  B10001, B01110, B00000, B00000
+};
+
+void setup() {
+  lcd.init();           // Iniciar LCD
+  lcd.backlight();      // Encender luz de fondo
+
+  // Crear caracter personalizado (slot 0)
+  lcd.createChar(0, caritaFeliz);
+
+  // Escribir en linea 1
+  lcd.setCursor(0, 0);  // Columna 0, Fila 0
+  lcd.print("EigenRobotics");
+
+  // Escribir en linea 2
+  lcd.setCursor(0, 1);  // Columna 0, Fila 1
+  lcd.print("Hola Mundo! ");
+  lcd.write(0);         // Mostrar carita
+}
+
+void loop() {
+  // Contador en segunda linea
+  for (int i = 0; i <= 99; i++) {
+    lcd.setCursor(14, 1);
+    if (i < 10) lcd.print(" ");
+    lcd.print(i);
+    delay(500);
+  }
+}</code></pre>
+            </div>
+
+            <div class="code-explain">
+                <div class="code-explain-item">
+                    <div class="code-explain-line">lcd.init()</div>
+                    <div class="code-explain-text">Inicializa la comunicacion I2C con el LCD</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">lcd.backlight()</div>
+                    <div class="code-explain-text">Enciende la luz de fondo (azul en la mayoria)</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">lcd.setCursor(col, row)</div>
+                    <div class="code-explain-text">Mueve el cursor a la posicion indicada (0-15, 0-1)</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">lcd.print("texto")</div>
+                    <div class="code-explain-text">Escribe texto en la posicion actual del cursor</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">lcd.createChar(n, array)</div>
+                    <div class="code-explain-text">Guarda un caracter personalizado en el slot n (0-7)</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">lcd.write(n)</div>
+                    <div class="code-explain-text">Muestra el caracter personalizado del slot n</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Demo -->
+        <section class="section" id="demo">
+            <div class="section-header">
+                <div class="section-number">8</div>
+                <h2 class="section-title">Demo Interactivo</h2>
+            </div>
+
+            <div class="demo-container">
+                <div class="demo-title">
+                    <h3>Escribe en el LCD</h3>
+                    <p style="color: var(--text-secondary);">Prueba como se ve tu mensaje en la pantalla</p>
+                </div>
+
+                <div class="demo-lcd">
+                    <div class="demo-lcd-module">
+                        <div class="demo-lcd-screen">
+                            <div class="demo-lcd-row" id="lcdRow0"></div>
+                            <div class="demo-lcd-row" id="lcdRow1"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-controls">
+                    <div class="demo-input-group">
+                        <input type="text" class="demo-input" id="line1Input" placeholder="Linea 1 (max 16)" maxlength="16" value="EigenRobotics">
+                    </div>
+                    <div class="demo-input-group">
+                        <input type="text" class="demo-input" id="line2Input" placeholder="Linea 2 (max 16)" maxlength="16" value="Hola Mundo! :)">
+                    </div>
+
+                    <div class="demo-presets">
+                        <button class="preset-btn" onclick="setPreset('EigenRobotics', 'Hola Mundo! :)')">Hola Mundo</button>
+                        <button class="preset-btn" onclick="setPreset('Temperatura:', '25.5 C')">Temperatura</button>
+                        <button class="preset-btn" onclick="setPreset('Distancia:', '42 cm')">Distancia</button>
+                        <button class="preset-btn" onclick="setPreset('INTRUSO!!!', 'ALARMA ACTIVA')">Alarma</button>
+                        <button class="preset-btn" onclick="setPreset('Robot Estado:', 'Explorando...')">Robot</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Integration -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">9</div>
+                <h2 class="section-title">Integrar con Otros Proyectos</h2>
+            </div>
+
+            <div class="card">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    El LCD es perfecto para dar feedback visual. Aqui tienes ideas para combinarlo con proyectos anteriores:
+                </p>
+
+                <table class="integration-table">
+                    <thead>
+                        <tr>
+                            <th>Proyecto</th>
+                            <th>Que Mostrar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>P3 Alarma</td>
+                            <td>"INTRUSO!" o distancia actual en cm</td>
+                        </tr>
+                        <tr>
+                            <td>P4 Girasol</td>
+                            <td>Nivel de luz izquierda vs derecha</td>
+                        </tr>
+                        <tr>
+                            <td>P5 Robot</td>
+                            <td>"Avanzando", "Girando", "Obstaculo!"</td>
+                        </tr>
+                        <tr>
+                            <td>P6 Control IR</td>
+                            <td>Codigo del boton pulsado</td>
+                        </tr>
+                        <tr>
+                            <td>P7 Brazo</td>
+                            <td>Angulos: "B:90 C:45 P:30"</td>
+                        </tr>
+                        <tr>
+                            <td>P8 Seguidor</td>
+                            <td>"Linea OK" o "Perdido!"</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Troubleshooting -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">10</div>
+                <h2 class="section-title">Problemas Comunes</h2>
+            </div>
+
+            <div class="card">
+                <table class="troubleshoot-table">
+                    <thead>
+                        <tr>
+                            <th>Problema</th>
+                            <th>Causa</th>
+                            <th>Solucion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>No muestra nada</td>
+                            <td>Contraste muy bajo</td>
+                            <td>Gira el potenciometro pequeño del modulo I2C</td>
+                        </tr>
+                        <tr>
+                            <td>Solo cuadros negros</td>
+                            <td>No inicializado</td>
+                            <td>Verifica direccion I2C (0x27 o 0x3F)</td>
+                        </tr>
+                        <tr>
+                            <td>Caracteres raros</td>
+                            <td>Direccion incorrecta</td>
+                            <td>Usa el escaner I2C del codigo</td>
+                        </tr>
+                        <tr>
+                            <td>Parpadea o se reinicia</td>
+                            <td>Falta corriente</td>
+                            <td>Usa fuente externa si tienes muchos componentes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Wokwi -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">11</div>
+                <h2 class="section-title">Simulador</h2>
+            </div>
+
+            <div class="wokwi-container">
+                <div class="wokwi-header">
+                    <span class="wokwi-dot red"></span>
+                    <span class="wokwi-dot yellow"></span>
+                    <span class="wokwi-dot green"></span>
+                    <span class="wokwi-title">Wokwi Simulator</span>
+                </div>
+                <iframe
+                    class="wokwi-embed"
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    loading="lazy"
+                    title="Simulador Wokwi">
+                </iframe>
+            </div>
+
+            <div class="tip-box">
+                <div class="tip-icon">💡</div>
+                <div class="tip-text">
+                    <strong>En Wokwi:</strong> Anade un "LCD 16x2 (I2C)" desde los componentes. La direccion por defecto es 0x27.
+                </div>
+            </div>
+        </section>
+
+        <!-- Steps -->
+        <section class="section" id="pasos">
+            <div class="section-header">
+                <div class="section-number">12</div>
+                <h2 class="section-title">Pasos de Construccion</h2>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>Conecta los 4 cables</h4>
+                        <p>VCC a 5V, GND a GND, SDA a A4, SCL a A5. ¡Solo 4 cables!</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>Instala la libreria</h4>
+                        <p>Tools → Manage Libraries → Buscar "LiquidCrystal I2C" → Instalar</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>Sube el codigo</h4>
+                        <p>Copia el codigo y subelo al Arduino</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h4>Ajusta el contraste</h4>
+                        <p>Si solo ves cuadros o nada, gira el potenciometro pequeño del modulo I2C</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <h4>Verifica la direccion</h4>
+                        <p>Si no funciona, usa el escaner I2C para encontrar la direccion real</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">6</div>
+                    <div class="step-content">
+                        <h4>Personaliza</h4>
+                        <p>Cambia los mensajes, crea tus propios caracteres, integra con otros sensores</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">13</div>
+                <h2 class="section-title">Experimentos</h2>
+            </div>
+
+            <div class="experiments-grid">
+                <div class="experiment-card">
+                    <div class="experiment-icon">🎨</div>
+                    <h4>Diseña Iconos</h4>
+                    <p>Crea tus propios caracteres: un robot, una nave, tu inicial</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🌡️</div>
+                    <h4>Termometro</h4>
+                    <p>Conecta un sensor de temperatura y muestra los grados</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">⏱️</div>
+                    <h4>Cronometro</h4>
+                    <p>Con un boton start/stop para medir tiempos</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">📋</div>
+                    <h4>Menu Navegable</h4>
+                    <p>Usa botones para navegar entre opciones en el LCD</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">📜</div>
+                    <h4>Texto Scrolling</h4>
+                    <p>Mensajes largos que se desplazan de derecha a izquierda</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🎮</div>
+                    <h4>Mini Juego</h4>
+                    <p>Un simple juego de evitar obstaculos con 2 botones</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="../index.html">Inicio</a>
+            <a href="p8-seguidor-linea.html">← P8: Seguidor de Linea</a>
+            <a href="p10-comunicacion.html">P10: Comunicacion Serial →</a>
+        </div>
+        <p class="footer-copy">EigenRobotics - Aprendiendo robotica en familia</p>
+    </footer>
+
+    <script>
+        hljs.highlightAll();
+
+        // LCD Demo
+        const lcdRow0 = document.getElementById('lcdRow0');
+        const lcdRow1 = document.getElementById('lcdRow1');
+        const line1Input = document.getElementById('line1Input');
+        const line2Input = document.getElementById('line2Input');
+
+        // Initialize LCD display
+        function initLCD() {
+            lcdRow0.innerHTML = '';
+            lcdRow1.innerHTML = '';
+
+            for (let i = 0; i < 16; i++) {
+                const char0 = document.createElement('div');
+                char0.className = 'demo-lcd-char';
+                lcdRow0.appendChild(char0);
+
+                const char1 = document.createElement('div');
+                char1.className = 'demo-lcd-char';
+                lcdRow1.appendChild(char1);
+            }
+
+            updateLCD();
+        }
+
+        function updateLCD() {
+            const line1 = line1Input.value.padEnd(16, ' ').substring(0, 16);
+            const line2 = line2Input.value.padEnd(16, ' ').substring(0, 16);
+
+            const chars0 = lcdRow0.querySelectorAll('.demo-lcd-char');
+            const chars1 = lcdRow1.querySelectorAll('.demo-lcd-char');
+
+            for (let i = 0; i < 16; i++) {
+                chars0[i].textContent = line1[i];
+                chars0[i].classList.toggle('filled', line1[i] !== ' ');
+
+                chars1[i].textContent = line2[i];
+                chars1[i].classList.toggle('filled', line2[i] !== ' ');
+            }
+        }
+
+        function setPreset(l1, l2) {
+            line1Input.value = l1;
+            line2Input.value = l2;
+            updateLCD();
+        }
+
+        line1Input.addEventListener('input', updateLCD);
+        line2Input.addEventListener('input', updateLCD);
+
+        // Initialize on load
+        initLCD();
+
+        // Make character pixels interactive
+        document.querySelectorAll('.char-grid .char-pixel').forEach(pixel => {
+            pixel.addEventListener('click', () => {
+                pixel.classList.toggle('on');
+            });
+        });
+    </script>
+</body>
+</html>
