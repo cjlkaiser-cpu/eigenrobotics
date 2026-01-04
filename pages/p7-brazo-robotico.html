@@ -1,0 +1,2081 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P7: Brazo Robotico - EigenRobotics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #1a1a24;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #f97316;
+            --accent-dim: rgba(249, 115, 22, 0.1);
+            --accent-glow: rgba(249, 115, 22, 0.4);
+            --servo-orange: #fb923c;
+            --servo-red: #ef4444;
+            --servo-brown: #78350f;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(249, 115, 22, 0.15) 0%, transparent 50%);
+        }
+
+        .hero-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Content */
+        .content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .card p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Result Preview */
+        .result-preview {
+            background: linear-gradient(135deg, var(--bg-card), rgba(249, 115, 22, 0.05));
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), #fbbf24, var(--accent));
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-desc {
+            color: var(--text-secondary);
+        }
+
+        /* Arm Parts Explanation */
+        .arm-parts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .arm-part {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .arm-part:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .arm-part-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .arm-part h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .arm-part-pin {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--bg-code);
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--servo-orange);
+            margin-bottom: 0.75rem;
+        }
+
+        .arm-part p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Servo Wiring */
+        .servo-wiring {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .servo-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .servo-visual {
+            width: 120px;
+            height: 80px;
+            background: linear-gradient(180deg, #1e40af, #1e3a8a);
+            border-radius: 5px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .servo-horn {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 12px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .servo-horn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: #1e3a8a;
+            border-radius: 50%;
+        }
+
+        .servo-wires {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .servo-wire {
+            width: 6px;
+            height: 30px;
+            border-radius: 3px;
+        }
+
+        .wire-brown { background: #78350f; }
+        .wire-red { background: #ef4444; }
+        .wire-orange { background: #fb923c; }
+
+        .wire-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .wire-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .wire-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .wire-dot.brown { background: #78350f; }
+        .wire-dot.red { background: #ef4444; }
+        .wire-dot.orange { background: #fb923c; }
+
+        .wire-text {
+            color: var(--text-secondary);
+        }
+
+        .wire-text strong {
+            color: var(--text-primary);
+        }
+
+        /* Power Warning */
+        .power-warning {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(249, 115, 22, 0.1));
+            border: 2px solid #ef4444;
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .power-warning-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .power-warning-icon {
+            font-size: 2rem;
+        }
+
+        .power-warning-title {
+            color: #ef4444;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .power-warning p {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .power-warning ul {
+            color: var(--text-secondary);
+            margin-left: 1.5rem;
+        }
+
+        .power-warning li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Potentiometer Explanation */
+        .pot-explanation {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .pot-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .pot-visual {
+            text-align: center;
+        }
+
+        .pot-body {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #374151, #1f2937);
+            border-radius: 50%;
+            position: relative;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .pot-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: #6b7280;
+            border-radius: 50%;
+        }
+
+        .pot-indicator {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 12px;
+            background: white;
+            border-radius: 2px;
+        }
+
+        .pot-pins {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .pot-pin {
+            width: 4px;
+            height: 15px;
+            background: #9ca3af;
+        }
+
+        .pot-arrow {
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        .pot-output {
+            text-align: center;
+        }
+
+        .pot-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .pot-range {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Map Function Explanation */
+        .map-box {
+            background: var(--bg-code);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .map-formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .map-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .map-range {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .map-range-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .map-range-values {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        /* Circuit Diagram */
+        .circuit-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            overflow-x: auto;
+        }
+
+        .circuit-svg {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Smooth Movement */
+        .smooth-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .smooth-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        @media (max-width: 600px) {
+            .smooth-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .smooth-type {
+            padding: 1.5rem;
+            background: var(--bg-code);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .smooth-type h4 {
+            margin-bottom: 1rem;
+        }
+
+        .smooth-type.bad h4 {
+            color: #ef4444;
+        }
+
+        .smooth-type.good h4 {
+            color: #22c55e;
+        }
+
+        .smooth-bar {
+            height: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .smooth-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        .smooth-bar-fill.instant {
+            width: 100%;
+            background: #ef4444;
+            animation: instant-move 2s ease-in-out infinite;
+        }
+
+        @keyframes instant-move {
+            0%, 100% { width: 10%; }
+            50% { width: 90%; }
+        }
+
+        .smooth-bar-fill.gradual {
+            width: 10%;
+            background: linear-gradient(90deg, #22c55e, var(--accent));
+            animation: gradual-move 2s linear infinite;
+        }
+
+        @keyframes gradual-move {
+            0% { width: 10%; }
+            50% { width: 90%; }
+            100% { width: 10%; }
+        }
+
+        .smooth-type p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Code Section */
+        .code-block {
+            background: var(--bg-code);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .code-header {
+            background: rgba(249, 115, 22, 0.1);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Code Explanation */
+        .code-explain {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .code-explain-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .code-explain-line {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 160px;
+        }
+
+        .code-explain-text {
+            color: var(--text-secondary);
+        }
+
+        /* Interactive Demo */
+        .demo-container {
+            background: linear-gradient(135deg, var(--bg-card), rgba(249, 115, 22, 0.05));
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .demo-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .demo-title h3 {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 800px) {
+            .demo-area {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Robot Arm Visualization */
+        .arm-canvas {
+            background: var(--bg-code);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 350px;
+        }
+
+        .arm-svg {
+            width: 100%;
+            max-width: 300px;
+            height: 300px;
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            background: var(--bg-code);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .control-label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .control-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            background: var(--bg-card);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .control-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--bg-card);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 2px 10px var(--accent-glow);
+        }
+
+        .control-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+        }
+
+        .control-range {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* Sequence Buttons */
+        .sequence-buttons {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .seq-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 16px;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .seq-btn:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .seq-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* Gripper visual */
+        .gripper-status {
+            text-align: center;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+        }
+
+        .gripper-visual {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .gripper-finger {
+            width: 8px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: transform 0.3s;
+        }
+
+        .gripper-finger.left {
+            transform-origin: bottom right;
+        }
+
+        .gripper-finger.right {
+            transform-origin: bottom left;
+        }
+
+        .gripper-open .gripper-finger.left {
+            transform: rotate(-20deg);
+        }
+
+        .gripper-open .gripper-finger.right {
+            transform: rotate(20deg);
+        }
+
+        .gripper-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Wokwi Embed */
+        .wokwi-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .wokwi-header {
+            background: var(--bg-code);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wokwi-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .wokwi-dot.red { background: #ef4444; }
+        .wokwi-dot.yellow { background: #eab308; }
+        .wokwi-dot.green { background: #22c55e; }
+
+        .wokwi-title {
+            margin-left: auto;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .wokwi-embed {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Steps */
+        .steps-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .step-item:hover {
+            border-color: var(--accent);
+        }
+
+        .step-num {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Experiments */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .experiment-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-card h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .experiment-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tip Box */
+        .tip-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tip-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tip-text {
+            color: var(--text-secondary);
+        }
+
+        .tip-text strong {
+            color: #22c55e;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-copy {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="../index.html" class="nav-logo orbitron">EIGENROBOTICS</a>
+        <div class="nav-links">
+            <a href="#hardware">Hardware</a>
+            <a href="#codigo">Codigo</a>
+            <a href="#demo">Demo</a>
+            <a href="#pasos">Pasos</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-level orbitron">Proyecto 7</div>
+        <h1 class="orbitron">Brazo Robotico</h1>
+        <p class="hero-subtitle">
+            Construye un brazo articulado con 3 servos.
+            Gira, sube, baja y agarra objetos como un robot industrial.
+        </p>
+    </section>
+
+    <!-- Content -->
+    <main class="content">
+        <!-- Result -->
+        <section class="section">
+            <div class="result-preview">
+                <div class="result-icon">🦾</div>
+                <div class="result-text">Brazo que Agarra Objetos</div>
+                <p class="result-desc">Controla 3 articulaciones con potenciometros o programa secuencias automaticas.</p>
+            </div>
+        </section>
+
+        <!-- Arm Parts -->
+        <section class="section" id="hardware">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2 class="section-title">Las 3 Articulaciones</h2>
+            </div>
+
+            <div class="arm-parts">
+                <div class="arm-part">
+                    <div class="arm-part-icon">🔄</div>
+                    <h3>Base</h3>
+                    <div class="arm-part-pin">Pin 9</div>
+                    <p>Gira todo el brazo de izquierda a derecha (0° - 180°)</p>
+                </div>
+                <div class="arm-part">
+                    <div class="arm-part-icon">📐</div>
+                    <h3>Codo</h3>
+                    <div class="arm-part-pin">Pin 10</div>
+                    <p>Sube y baja el antebrazo (30° - 150° para no golpear)</p>
+                </div>
+                <div class="arm-part">
+                    <div class="arm-part-icon">🤏</div>
+                    <h3>Pinza</h3>
+                    <div class="arm-part-pin">Pin 11</div>
+                    <p>Abre y cierra para agarrar objetos (30° cerrada - 90° abierta)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Servo Wiring -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2 class="section-title">Cables del Servo</h2>
+            </div>
+
+            <div class="servo-wiring">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Los servos SG90 tienen 3 cables con colores estandar. Es importante conectarlos correctamente:
+                </p>
+
+                <div class="servo-diagram">
+                    <div class="servo-visual">
+                        <div class="servo-horn"></div>
+                        <div class="servo-wires">
+                            <div class="servo-wire wire-brown"></div>
+                            <div class="servo-wire wire-red"></div>
+                            <div class="servo-wire wire-orange"></div>
+                        </div>
+                    </div>
+
+                    <div class="wire-labels">
+                        <div class="wire-label">
+                            <div class="wire-dot brown"></div>
+                            <div class="wire-text"><strong>Marron</strong> → GND (tierra)</div>
+                        </div>
+                        <div class="wire-label">
+                            <div class="wire-dot red"></div>
+                            <div class="wire-text"><strong>Rojo</strong> → 5V (alimentacion)</div>
+                        </div>
+                        <div class="wire-label">
+                            <div class="wire-dot orange"></div>
+                            <div class="wire-text"><strong>Naranja</strong> → Pin de senal (9, 10 u 11)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip-box">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-text">
+                        <strong>Truco:</strong> Algunos servos usan Negro-Rojo-Blanco en lugar de Marron-Rojo-Naranja. Negro = GND, Blanco = Senal.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Power Warning -->
+            <div class="power-warning">
+                <div class="power-warning-header">
+                    <div class="power-warning-icon">⚡</div>
+                    <div class="power-warning-title">Alimentacion Externa Recomendada</div>
+                </div>
+                <p>
+                    Con 3 servos moviendose a la vez, el pin 5V de Arduino puede no dar suficiente corriente.
+                    Esto causa que Arduino se reinicie o los servos tiemblen.
+                </p>
+                <p><strong>Solucion:</strong></p>
+                <ul>
+                    <li>Usa 4 pilas AA (6V) o una fuente de 5V externa para los servos</li>
+                    <li>Conecta el GND de la fuente externa al GND de Arduino (tierra comun)</li>
+                    <li>Los cables naranjas (senal) van a los pines de Arduino</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Potentiometers -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2 class="section-title">Potenciometros como Joysticks</h2>
+            </div>
+
+            <div class="pot-explanation">
+                <p style="color: var(--text-secondary);">
+                    Cada potenciometro controla una articulacion. Al girarlo, Arduino lee un valor de 0 a 1023
+                    y lo convierte al angulo del servo (0° a 180°).
+                </p>
+
+                <div class="pot-diagram">
+                    <div class="pot-visual">
+                        <div class="pot-body">
+                            <div class="pot-knob">
+                                <div class="pot-indicator"></div>
+                            </div>
+                        </div>
+                        <div class="pot-pins">
+                            <div class="pot-pin"></div>
+                            <div class="pot-pin"></div>
+                            <div class="pot-pin"></div>
+                        </div>
+                        <div style="color: var(--text-dim); font-size: 0.8rem; margin-top: 8px;">Potenciometro</div>
+                    </div>
+
+                    <div class="pot-arrow">→</div>
+
+                    <div class="pot-output">
+                        <div class="pot-value">512</div>
+                        <div class="pot-range">Lectura: 0 - 1023</div>
+                    </div>
+
+                    <div class="pot-arrow">→</div>
+
+                    <div class="pot-output">
+                        <div class="pot-value">90°</div>
+                        <div class="pot-range">Servo: 0° - 180°</div>
+                    </div>
+                </div>
+
+                <div class="map-box">
+                    <div class="map-formula">angulo = map(lectura, 0, 1023, 0, 180)</div>
+                    <div class="map-visual">
+                        <div class="map-range">
+                            <div class="map-range-label">Entrada (pot)</div>
+                            <div class="map-range-values">0 → 1023</div>
+                        </div>
+                        <span style="color: var(--text-dim);">se convierte a</span>
+                        <div class="map-range">
+                            <div class="map-range-label">Salida (servo)</div>
+                            <div class="map-range-values">0° → 180°</div>
+                        </div>
+                    </div>
+                </div>
+
+                <table style="width: 100%; margin-top: 1.5rem; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <th style="padding: 12px; text-align: left; color: var(--accent);">Potenciometro</th>
+                            <th style="padding: 12px; text-align: left; color: var(--accent);">Pin Analogico</th>
+                            <th style="padding: 12px; text-align: left; color: var(--accent);">Controla</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 12px; color: var(--text-secondary);">Pot 1</td>
+                            <td style="padding: 12px;"><code style="color: var(--servo-orange);">A0</code></td>
+                            <td style="padding: 12px; color: var(--text-secondary);">Base (giro)</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 12px; color: var(--text-secondary);">Pot 2</td>
+                            <td style="padding: 12px;"><code style="color: var(--servo-orange);">A1</code></td>
+                            <td style="padding: 12px; color: var(--text-secondary);">Codo (arriba/abajo)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; color: var(--text-secondary);">Pot 3</td>
+                            <td style="padding: 12px;"><code style="color: var(--servo-orange);">A2</code></td>
+                            <td style="padding: 12px; color: var(--text-secondary);">Pinza (abrir/cerrar)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Circuit Diagram -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2 class="section-title">Diagrama del Circuito</h2>
+            </div>
+
+            <div class="circuit-container">
+                <svg class="circuit-svg" viewBox="0 0 900 550">
+                    <!-- Background -->
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="900" height="550" fill="#12121a"/>
+                    <rect width="900" height="550" fill="url(#grid)"/>
+
+                    <!-- Title -->
+                    <text x="450" y="30" text-anchor="middle" fill="#f97316" font-size="16" font-weight="bold">Circuito Brazo Robotico - 3 Servos + 3 Potenciometros</text>
+
+                    <!-- Arduino UNO -->
+                    <g transform="translate(30, 120)">
+                        <rect x="0" y="0" width="160" height="300" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                        <text x="80" y="25" text-anchor="middle" fill="white" font-size="14" font-weight="bold">ARDUINO UNO</text>
+
+                        <!-- Digital Pins -->
+                        <text x="140" y="55" text-anchor="end" fill="#64748b" font-size="10">DIGITAL</text>
+                        <circle cx="150" cy="75" r="6" fill="#fb923c"/>
+                        <text x="135" y="78" text-anchor="end" fill="white" font-size="10">9</text>
+                        <circle cx="150" cy="95" r="6" fill="#fb923c"/>
+                        <text x="135" y="98" text-anchor="end" fill="white" font-size="10">10</text>
+                        <circle cx="150" cy="115" r="6" fill="#fb923c"/>
+                        <text x="135" y="118" text-anchor="end" fill="white" font-size="10">11</text>
+
+                        <!-- Analog Pins -->
+                        <text x="140" y="155" text-anchor="end" fill="#64748b" font-size="10">ANALOG</text>
+                        <circle cx="150" cy="175" r="6" fill="#22c55e"/>
+                        <text x="135" y="178" text-anchor="end" fill="white" font-size="10">A0</text>
+                        <circle cx="150" cy="195" r="6" fill="#22c55e"/>
+                        <text x="135" y="198" text-anchor="end" fill="white" font-size="10">A1</text>
+                        <circle cx="150" cy="215" r="6" fill="#22c55e"/>
+                        <text x="135" y="218" text-anchor="end" fill="white" font-size="10">A2</text>
+
+                        <!-- Power -->
+                        <text x="140" y="255" text-anchor="end" fill="#64748b" font-size="10">POWER</text>
+                        <circle cx="150" cy="275" r="6" fill="#ef4444"/>
+                        <text x="135" y="278" text-anchor="end" fill="white" font-size="10">5V</text>
+                        <circle cx="150" cy="295" r="6" fill="#374151" stroke="#6b7280"/>
+                        <text x="135" y="298" text-anchor="end" fill="white" font-size="10">GND</text>
+                    </g>
+
+                    <!-- External Power (batteries) -->
+                    <g transform="translate(250, 60)">
+                        <rect x="0" y="0" width="120" height="60" rx="8" fill="#1f2937" stroke="#f97316" stroke-width="2"/>
+                        <text x="60" y="25" text-anchor="middle" fill="#f97316" font-size="11" font-weight="bold">FUENTE EXTERNA</text>
+                        <text x="60" y="42" text-anchor="middle" fill="#ef4444" font-size="12">5V - 6V</text>
+                        <text x="60" y="55" text-anchor="middle" fill="#64748b" font-size="9">(4x AA o adaptador)</text>
+                    </g>
+
+                    <!-- Servos -->
+                    <g transform="translate(450, 80)">
+                        <!-- Servo Base -->
+                        <g>
+                            <rect x="0" y="0" width="100" height="60" rx="5" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                            <rect x="35" y="-10" width="30" height="10" rx="3" fill="white"/>
+                            <text x="50" y="25" text-anchor="middle" fill="white" font-size="10" font-weight="bold">SERVO</text>
+                            <text x="50" y="40" text-anchor="middle" fill="#fb923c" font-size="10">BASE</text>
+                            <text x="50" y="52" text-anchor="middle" fill="#64748b" font-size="9">Pin 9</text>
+                            <!-- Wires -->
+                            <line x1="25" y1="60" x2="25" y2="85" stroke="#78350f" stroke-width="3"/>
+                            <line x1="50" y1="60" x2="50" y2="85" stroke="#ef4444" stroke-width="3"/>
+                            <line x1="75" y1="60" x2="75" y2="85" stroke="#fb923c" stroke-width="3"/>
+                        </g>
+
+                        <!-- Servo Codo -->
+                        <g transform="translate(130, 0)">
+                            <rect x="0" y="0" width="100" height="60" rx="5" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                            <rect x="35" y="-10" width="30" height="10" rx="3" fill="white"/>
+                            <text x="50" y="25" text-anchor="middle" fill="white" font-size="10" font-weight="bold">SERVO</text>
+                            <text x="50" y="40" text-anchor="middle" fill="#fb923c" font-size="10">CODO</text>
+                            <text x="50" y="52" text-anchor="middle" fill="#64748b" font-size="9">Pin 10</text>
+                            <line x1="25" y1="60" x2="25" y2="85" stroke="#78350f" stroke-width="3"/>
+                            <line x1="50" y1="60" x2="50" y2="85" stroke="#ef4444" stroke-width="3"/>
+                            <line x1="75" y1="60" x2="75" y2="85" stroke="#fb923c" stroke-width="3"/>
+                        </g>
+
+                        <!-- Servo Pinza -->
+                        <g transform="translate(260, 0)">
+                            <rect x="0" y="0" width="100" height="60" rx="5" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                            <rect x="35" y="-10" width="30" height="10" rx="3" fill="white"/>
+                            <text x="50" y="25" text-anchor="middle" fill="white" font-size="10" font-weight="bold">SERVO</text>
+                            <text x="50" y="40" text-anchor="middle" fill="#fb923c" font-size="10">PINZA</text>
+                            <text x="50" y="52" text-anchor="middle" fill="#64748b" font-size="9">Pin 11</text>
+                            <line x1="25" y1="60" x2="25" y2="85" stroke="#78350f" stroke-width="3"/>
+                            <line x1="50" y1="60" x2="50" y2="85" stroke="#ef4444" stroke-width="3"/>
+                            <line x1="75" y1="60" x2="75" y2="85" stroke="#fb923c" stroke-width="3"/>
+                        </g>
+                    </g>
+
+                    <!-- Power rails for servos -->
+                    <line x1="370" y1="90" x2="370" y2="180" stroke="#ef4444" stroke-width="3"/>
+                    <line x1="370" y1="180" x2="810" y2="180" stroke="#ef4444" stroke-width="3"/>
+                    <text x="590" y="175" text-anchor="middle" fill="#ef4444" font-size="10">+ 5V (fuente externa)</text>
+
+                    <line x1="390" y1="90" x2="390" y2="200" stroke="#6b7280" stroke-width="3"/>
+                    <line x1="390" y1="200" x2="810" y2="200" stroke="#6b7280" stroke-width="3"/>
+                    <text x="590" y="215" text-anchor="middle" fill="#6b7280" font-size="10">GND (comun)</text>
+
+                    <!-- Connect servo GNDs to rail -->
+                    <line x1="475" y1="165" x2="475" y2="200" stroke="#78350f" stroke-width="2"/>
+                    <line x1="605" y1="165" x2="605" y2="200" stroke="#78350f" stroke-width="2"/>
+                    <line x1="735" y1="165" x2="735" y2="200" stroke="#78350f" stroke-width="2"/>
+
+                    <!-- Connect servo VCCs to rail -->
+                    <line x1="500" y1="165" x2="500" y2="180" stroke="#ef4444" stroke-width="2"/>
+                    <line x1="630" y1="165" x2="630" y2="180" stroke="#ef4444" stroke-width="2"/>
+                    <line x1="760" y1="165" x2="760" y2="180" stroke="#ef4444" stroke-width="2"/>
+
+                    <!-- Signal wires to Arduino -->
+                    <path d="M 525 165 L 525 230 L 220 230 L 220 195 L 180 195" stroke="#fb923c" stroke-width="2" fill="none"/>
+                    <path d="M 655 165 L 655 250 L 230 250 L 230 215 L 180 215" stroke="#fb923c" stroke-width="2" fill="none"/>
+                    <path d="M 785 165 L 785 270 L 240 270 L 240 235 L 180 235" stroke="#fb923c" stroke-width="2" fill="none"/>
+
+                    <!-- GND common connection -->
+                    <path d="M 180 415 L 390 415 L 390 200" stroke="#6b7280" stroke-width="2" fill="none"/>
+
+                    <!-- Potentiometers -->
+                    <g transform="translate(280, 320)">
+                        <!-- Pot Base -->
+                        <g>
+                            <circle cx="40" cy="40" r="35" fill="#374151" stroke="#6b7280" stroke-width="2"/>
+                            <circle cx="40" cy="40" r="15" fill="#1f2937"/>
+                            <line x1="40" y1="25" x2="40" y2="10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                            <text x="40" y="95" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="bold">POT BASE</text>
+                            <text x="40" y="108" text-anchor="middle" fill="#64748b" font-size="9">A0</text>
+                            <!-- Pins -->
+                            <line x1="20" y1="75" x2="20" y2="115" stroke="#9ca3af" stroke-width="2"/>
+                            <line x1="40" y1="75" x2="40" y2="115" stroke="#22c55e" stroke-width="2"/>
+                            <line x1="60" y1="75" x2="60" y2="115" stroke="#9ca3af" stroke-width="2"/>
+                        </g>
+
+                        <!-- Pot Codo -->
+                        <g transform="translate(130, 0)">
+                            <circle cx="40" cy="40" r="35" fill="#374151" stroke="#6b7280" stroke-width="2"/>
+                            <circle cx="40" cy="40" r="15" fill="#1f2937"/>
+                            <line x1="40" y1="25" x2="40" y2="10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                            <text x="40" y="95" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="bold">POT CODO</text>
+                            <text x="40" y="108" text-anchor="middle" fill="#64748b" font-size="9">A1</text>
+                            <line x1="20" y1="75" x2="20" y2="115" stroke="#9ca3af" stroke-width="2"/>
+                            <line x1="40" y1="75" x2="40" y2="115" stroke="#22c55e" stroke-width="2"/>
+                            <line x1="60" y1="75" x2="60" y2="115" stroke="#9ca3af" stroke-width="2"/>
+                        </g>
+
+                        <!-- Pot Pinza -->
+                        <g transform="translate(260, 0)">
+                            <circle cx="40" cy="40" r="35" fill="#374151" stroke="#6b7280" stroke-width="2"/>
+                            <circle cx="40" cy="40" r="15" fill="#1f2937"/>
+                            <line x1="40" y1="25" x2="40" y2="10" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                            <text x="40" y="95" text-anchor="middle" fill="#22c55e" font-size="11" font-weight="bold">POT PINZA</text>
+                            <text x="40" y="108" text-anchor="middle" fill="#64748b" font-size="9">A2</text>
+                            <line x1="20" y1="75" x2="20" y2="115" stroke="#9ca3af" stroke-width="2"/>
+                            <line x1="40" y1="75" x2="40" y2="115" stroke="#22c55e" stroke-width="2"/>
+                            <line x1="60" y1="75" x2="60" y2="115" stroke="#9ca3af" stroke-width="2"/>
+                        </g>
+                    </g>
+
+                    <!-- Pot connections to Arduino -->
+                    <path d="M 320 435 L 320 460 L 200 460 L 200 295 L 180 295" stroke="#22c55e" stroke-width="2" fill="none"/>
+                    <path d="M 450 435 L 450 475 L 210 475 L 210 315 L 180 315" stroke="#22c55e" stroke-width="2" fill="none"/>
+                    <path d="M 580 435 L 580 490 L 220 490 L 220 335 L 180 335" stroke="#22c55e" stroke-width="2" fill="none"/>
+
+                    <!-- Legend -->
+                    <g transform="translate(50, 500)">
+                        <text x="0" y="0" fill="#64748b" font-size="10">Cables:</text>
+                        <rect x="60" y="-10" width="15" height="15" rx="2" fill="#fb923c"/>
+                        <text x="80" y="2" fill="#fb923c" font-size="10">Senal servo</text>
+                        <rect x="160" y="-10" width="15" height="15" rx="2" fill="#22c55e"/>
+                        <text x="180" y="2" fill="#22c55e" font-size="10">Senal pot</text>
+                        <rect x="260" y="-10" width="15" height="15" rx="2" fill="#ef4444"/>
+                        <text x="280" y="2" fill="#ef4444" font-size="10">5V</text>
+                        <rect x="320" y="-10" width="15" height="15" rx="2" fill="#6b7280"/>
+                        <text x="340" y="2" fill="#6b7280" font-size="10">GND</text>
+                    </g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Smooth Movement -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2 class="section-title">Movimiento Suave</h2>
+            </div>
+
+            <div class="smooth-box">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Si movemos el servo directamente al angulo objetivo, el movimiento es brusco y puede danar el brazo o tirar objetos.
+                    Usamos una funcion que mueve <strong style="color: var(--accent);">gradualmente</strong>, paso a paso.
+                </p>
+
+                <div class="smooth-comparison">
+                    <div class="smooth-type bad">
+                        <h4>❌ Movimiento Directo</h4>
+                        <div class="smooth-bar">
+                            <div class="smooth-bar-fill instant"></div>
+                        </div>
+                        <p>Salta instantaneamente. Brusco, puede tirar objetos.</p>
+                    </div>
+                    <div class="smooth-type good">
+                        <h4>✅ Movimiento Suave</h4>
+                        <div class="smooth-bar">
+                            <div class="smooth-bar-fill gradual"></div>
+                        </div>
+                        <p>Avanza poco a poco. Suave, control preciso.</p>
+                    </div>
+                </div>
+
+                <div class="code-block" style="margin-top: 1.5rem;">
+                    <div class="code-header">
+                        <span class="code-filename">Funcion moverSuave()</span>
+                    </div>
+                    <pre><code class="language-cpp">int moverSuave(int actual, int objetivo, int paso) {
+  if (actual < objetivo) {
+    return min(actual + paso, objetivo);  // Subir
+  } else if (actual > objetivo) {
+    return max(actual - paso, objetivo);  // Bajar
+  }
+  return actual;  // Ya llegamos
+}</code></pre>
+                </div>
+
+                <p style="color: var(--text-secondary); text-align: center;">
+                    Cada vez que se llama, avanza <strong style="color: var(--accent);">2 grados</strong> hacia el objetivo.
+                    Si objetivo es 90° y actual es 80°, despues de llamarla sera 82°, luego 84°, etc.
+                </p>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section class="section" id="codigo">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2 class="section-title">El Codigo</h2>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-filename">p7_brazo_robotico.ino</span>
+                </div>
+                <pre><code class="language-cpp">#include &lt;Servo.h&gt;
+
+// Pines de servos
+const int PIN_BASE = 9;
+const int PIN_CODO = 10;
+const int PIN_PINZA = 11;
+
+// Pines de potenciometros
+const int POT_BASE = A0;
+const int POT_CODO = A1;
+const int POT_PINZA = A2;
+
+// Limites de movimiento
+const int BASE_MIN = 0;
+const int BASE_MAX = 180;
+const int CODO_MIN = 30;    // Evitar golpear la base
+const int CODO_MAX = 150;
+const int PINZA_ABIERTA = 90;
+const int PINZA_CERRADA = 30;
+
+// Servos
+Servo servoBase;
+Servo servoCodo;
+Servo servoPinza;
+
+// Posiciones actuales
+int posBase = 90;
+int posCodo = 90;
+int posPinza = 90;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Brazo Robotico - EigenRobotics");
+
+  servoBase.attach(PIN_BASE);
+  servoCodo.attach(PIN_CODO);
+  servoPinza.attach(PIN_PINZA);
+
+  posicionInicial();
+  delay(1000);
+}
+
+void loop() {
+  // Leer potenciometros
+  int lecturaBase = analogRead(POT_BASE);
+  int lecturaCodo = analogRead(POT_CODO);
+  int lecturaPinza = analogRead(POT_PINZA);
+
+  // Mapear a angulos
+  int objetivoBase = map(lecturaBase, 0, 1023, BASE_MIN, BASE_MAX);
+  int objetivoCodo = map(lecturaCodo, 0, 1023, CODO_MIN, CODO_MAX);
+  int objetivoPinza = map(lecturaPinza, 0, 1023, PINZA_ABIERTA, PINZA_CERRADA);
+
+  // Mover suavemente
+  posBase = moverSuave(posBase, objetivoBase, 2);
+  posCodo = moverSuave(posCodo, objetivoCodo, 2);
+  posPinza = moverSuave(posPinza, objetivoPinza, 3);
+
+  // Aplicar posiciones
+  servoBase.write(posBase);
+  servoCodo.write(posCodo);
+  servoPinza.write(posPinza);
+
+  delay(20);
+}
+
+int moverSuave(int actual, int objetivo, int paso) {
+  if (actual < objetivo) return min(actual + paso, objetivo);
+  if (actual > objetivo) return max(actual - paso, objetivo);
+  return actual;
+}
+
+void posicionInicial() {
+  servoBase.write(90);
+  servoCodo.write(90);
+  servoPinza.write(PINZA_ABIERTA);
+  posBase = 90;
+  posCodo = 90;
+  posPinza = PINZA_ABIERTA;
+}</code></pre>
+            </div>
+
+            <div class="code-explain">
+                <div class="code-explain-item">
+                    <div class="code-explain-line">servo.attach(pin)</div>
+                    <div class="code-explain-text">Conecta el objeto servo al pin fisico. Hay que hacerlo para cada servo.</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">analogRead(POT)</div>
+                    <div class="code-explain-text">Lee el valor del potenciometro (0-1023 segun la posicion del dial).</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">map(valor, ...)</div>
+                    <div class="code-explain-text">Convierte el rango 0-1023 al rango de angulos del servo (ej: 0-180).</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">moverSuave()</div>
+                    <div class="code-explain-text">Funcion que avanza gradualmente hacia el objetivo, evitando saltos bruscos.</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">servo.write(angulo)</div>
+                    <div class="code-explain-text">Mueve el servo a la posicion indicada (0° a 180°).</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">delay(20)</div>
+                    <div class="code-explain-text">Pequena pausa de 20ms entre actualizaciones. 50 veces por segundo.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Demo -->
+        <section class="section" id="demo">
+            <div class="section-header">
+                <div class="section-number">7</div>
+                <h2 class="section-title">Demo Interactivo</h2>
+            </div>
+
+            <div class="demo-container">
+                <div class="demo-title">
+                    <h3>Controla el Brazo</h3>
+                    <p style="color: var(--text-secondary);">Mueve los deslizadores como si fueran potenciometros</p>
+                </div>
+
+                <div class="demo-area">
+                    <!-- Arm Visualization -->
+                    <div class="arm-canvas">
+                        <svg class="arm-svg" viewBox="0 0 300 300">
+                            <!-- Base platform -->
+                            <ellipse cx="150" cy="280" rx="60" ry="15" fill="#374151"/>
+                            <rect x="120" y="250" width="60" height="30" fill="#4b5563" rx="5"/>
+
+                            <!-- Base servo (rotation indicator) -->
+                            <g id="baseRotation" style="transform-origin: 150px 250px;">
+                                <!-- Arm base -->
+                                <rect x="140" y="230" width="20" height="25" fill="#1e3a5f" rx="3"/>
+
+                                <!-- Upper arm -->
+                                <g id="elbowRotation" style="transform-origin: 150px 230px;">
+                                    <rect x="145" y="150" width="10" height="85" fill="#f97316" rx="3"/>
+
+                                    <!-- Elbow joint -->
+                                    <circle cx="150" cy="150" r="12" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+
+                                    <!-- Forearm + gripper -->
+                                    <g id="forearmGroup" style="transform-origin: 150px 150px;">
+                                        <rect x="145" y="80" width="10" height="75" fill="#fb923c" rx="3"/>
+
+                                        <!-- Gripper -->
+                                        <g id="gripperGroup" transform="translate(150, 70)">
+                                            <rect x="-5" y="0" width="10" height="15" fill="#4b5563" rx="2"/>
+                                            <!-- Left finger -->
+                                            <rect id="leftFinger" x="-15" y="10" width="8" height="25" fill="#6b7280" rx="2" style="transform-origin: -11px 10px;"/>
+                                            <!-- Right finger -->
+                                            <rect id="rightFinger" x="7" y="10" width="8" height="25" fill="#6b7280" rx="2" style="transform-origin: 11px 10px;"/>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+
+                            <!-- Base rotation indicator -->
+                            <text x="150" y="295" text-anchor="middle" fill="#64748b" font-size="10" id="baseAngleText">Base: 90°</text>
+                        </svg>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="controls-panel">
+                        <div class="control-group">
+                            <div class="control-header">
+                                <span class="control-label">🔄 Base (Giro)</span>
+                                <span class="control-value" id="baseValue">90°</span>
+                            </div>
+                            <input type="range" class="control-slider" id="baseSlider" min="0" max="180" value="90">
+                            <div class="control-range">
+                                <span>0° (izquierda)</span>
+                                <span>180° (derecha)</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-header">
+                                <span class="control-label">📐 Codo (Altura)</span>
+                                <span class="control-value" id="elbowValue">90°</span>
+                            </div>
+                            <input type="range" class="control-slider" id="elbowSlider" min="30" max="150" value="90">
+                            <div class="control-range">
+                                <span>30° (abajo)</span>
+                                <span>150° (arriba)</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-header">
+                                <span class="control-label">🤏 Pinza</span>
+                                <span class="control-value" id="gripperValue">Abierta</span>
+                            </div>
+                            <input type="range" class="control-slider" id="gripperSlider" min="30" max="90" value="90">
+                            <div class="control-range">
+                                <span>Cerrada</span>
+                                <span>Abierta</span>
+                            </div>
+                        </div>
+
+                        <div class="sequence-buttons">
+                            <button class="seq-btn" onclick="runSequence('home')">🏠 Inicio</button>
+                            <button class="seq-btn" onclick="runSequence('grab')">🎯 Agarrar</button>
+                            <button class="seq-btn" onclick="runSequence('wave')">👋 Saludar</button>
+                        </div>
+
+                        <div class="gripper-status" id="gripperStatus">
+                            <div class="gripper-visual gripper-open" id="gripperVisual">
+                                <div class="gripper-finger left"></div>
+                                <div class="gripper-finger right"></div>
+                            </div>
+                            <div class="gripper-label">Pinza abierta</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Wokwi -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">8</div>
+                <h2 class="section-title">Simulador</h2>
+            </div>
+
+            <div class="wokwi-container">
+                <div class="wokwi-header">
+                    <span class="wokwi-dot red"></span>
+                    <span class="wokwi-dot yellow"></span>
+                    <span class="wokwi-dot green"></span>
+                    <span class="wokwi-title">Wokwi Simulator</span>
+                </div>
+                <iframe
+                    class="wokwi-embed"
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    loading="lazy"
+                    title="Simulador Wokwi">
+                </iframe>
+            </div>
+
+            <div class="tip-box">
+                <div class="tip-icon">💡</div>
+                <div class="tip-text">
+                    <strong>En Wokwi:</strong> Anade 3 servos y 3 potenciometros. Los potenciometros se controlan con el raton para simular el giro.
+                </div>
+            </div>
+        </section>
+
+        <!-- Steps -->
+        <section class="section" id="pasos">
+            <div class="section-header">
+                <div class="section-number">9</div>
+                <h2 class="section-title">Pasos de Construccion</h2>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>Construye la estructura</h4>
+                        <p>Usa LEGO Technic o piezas impresas 3D. Necesitas base, brazo, antebrazo y pinza.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>Monta los servos</h4>
+                        <p>Servo 1 en la base (giro horizontal), Servo 2 en el codo, Servo 3 en la pinza.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>Prepara la alimentacion</h4>
+                        <p>Conecta 4 pilas AA (6V) o fuente 5V externa. Une el GND con el de Arduino.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h4>Conecta los servos</h4>
+                        <p>Marron a GND, rojo a 5V (externo), naranja a pines 9, 10 y 11.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <h4>Coloca los potenciometros</h4>
+                        <p>Cada pot: extremos a 5V y GND de Arduino, centro a A0, A1 y A2.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">6</div>
+                    <div class="step-content">
+                        <h4>Sube el codigo</h4>
+                        <p>Copia el codigo y subelo. Los servos iran a posicion inicial (90°).</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">7</div>
+                    <div class="step-content">
+                        <h4>Ajusta los limites</h4>
+                        <p>Modifica CODO_MIN, CODO_MAX etc. para que el brazo no golpee la base.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">8</div>
+                    <div class="step-content">
+                        <h4>Prueba el control manual</h4>
+                        <p>Gira los potenciometros y observa como cada articulacion responde suavemente.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">9</div>
+                    <div class="step-content">
+                        <h4>Anade objetos</h4>
+                        <p>Pon piezas LEGO o canicas en la mesa. Intenta agarrarlas y moverlas.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">10</div>
+                    <div class="step-content">
+                        <h4>Programa secuencias</h4>
+                        <p>Usa la funcion secuenciaAgarrar() o crea las tuyas propias.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">10</div>
+                <h2 class="section-title">Experimentos</h2>
+            </div>
+
+            <div class="experiments-grid">
+                <div class="experiment-card">
+                    <div class="experiment-icon">🎮</div>
+                    <h4>Control con Joystick</h4>
+                    <p>Reemplaza los potenciometros por un joystick analogico para control tipo videojuego</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">📡</div>
+                    <h4>Control Remoto IR</h4>
+                    <p>Integra el proyecto P6 para mover el brazo con el mando a distancia</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🔄</div>
+                    <h4>4º Servo: Muneca</h4>
+                    <p>Anade un servo extra para rotar la pinza 360°</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">💾</div>
+                    <h4>Grabar Movimientos</h4>
+                    <p>Guarda posiciones en un array y reproducelas como "memoria muscular"</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🏆</div>
+                    <h4>Juego de Precision</h4>
+                    <p>Competicion: ¿Cuantos objetos puedes mover en 1 minuto?</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🎨</div>
+                    <h4>Brazo Dibujante</h4>
+                    <p>Pon un rotulador en la pinza y programa figuras geometricas</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="../index.html">Inicio</a>
+            <a href="p6-control-remoto.html">← P6: Control Remoto</a>
+            <a href="p8-seguidor-linea.html">P8: Seguidor de Linea →</a>
+        </div>
+        <p class="footer-copy">EigenRobotics - Aprendiendo robotica en familia</p>
+    </footer>
+
+    <script>
+        // Highlight.js
+        hljs.highlightAll();
+
+        // DOM Elements
+        const baseSlider = document.getElementById('baseSlider');
+        const elbowSlider = document.getElementById('elbowSlider');
+        const gripperSlider = document.getElementById('gripperSlider');
+
+        const baseValue = document.getElementById('baseValue');
+        const elbowValue = document.getElementById('elbowValue');
+        const gripperValue = document.getElementById('gripperValue');
+        const baseAngleText = document.getElementById('baseAngleText');
+
+        const baseRotation = document.getElementById('baseRotation');
+        const forearmGroup = document.getElementById('forearmGroup');
+        const leftFinger = document.getElementById('leftFinger');
+        const rightFinger = document.getElementById('rightFinger');
+        const gripperVisual = document.getElementById('gripperVisual');
+        const gripperStatus = document.getElementById('gripperStatus');
+
+        // Current positions
+        let currentBase = 90;
+        let currentElbow = 90;
+        let currentGripper = 90;
+
+        // Update arm visualization
+        function updateArm() {
+            // Base rotation (centered at 90, so 0 = -90deg, 180 = +90deg)
+            const baseAngle = currentBase - 90;
+            baseRotation.style.transform = `rotate(${baseAngle}deg)`;
+            baseAngleText.textContent = `Base: ${currentBase}°`;
+
+            // Elbow rotation (30 = down, 150 = up)
+            // Map 30-150 to visual rotation
+            const elbowAngle = (currentElbow - 90) * 0.8;
+            forearmGroup.style.transform = `rotate(${-elbowAngle}deg)`;
+
+            // Gripper (30 = closed, 90 = open)
+            const gripperOpenness = (currentGripper - 30) / 60; // 0 to 1
+            const fingerAngle = gripperOpenness * 25; // 0 to 25 degrees
+
+            leftFinger.style.transform = `rotate(${-fingerAngle}deg)`;
+            rightFinger.style.transform = `rotate(${fingerAngle}deg)`;
+
+            // Update gripper visual in control panel
+            if (currentGripper > 60) {
+                gripperVisual.className = 'gripper-visual gripper-open';
+                gripperStatus.querySelector('.gripper-label').textContent = 'Pinza abierta';
+            } else {
+                gripperVisual.className = 'gripper-visual';
+                gripperStatus.querySelector('.gripper-label').textContent = 'Pinza cerrada';
+            }
+        }
+
+        // Slider event listeners
+        baseSlider.addEventListener('input', (e) => {
+            currentBase = parseInt(e.target.value);
+            baseValue.textContent = currentBase + '°';
+            updateArm();
+        });
+
+        elbowSlider.addEventListener('input', (e) => {
+            currentElbow = parseInt(e.target.value);
+            elbowValue.textContent = currentElbow + '°';
+            updateArm();
+        });
+
+        gripperSlider.addEventListener('input', (e) => {
+            currentGripper = parseInt(e.target.value);
+            gripperValue.textContent = currentGripper > 60 ? 'Abierta' : 'Cerrada';
+            updateArm();
+        });
+
+        // Smooth animation helper
+        function animateTo(targetBase, targetElbow, targetGripper, duration = 1000) {
+            const startBase = currentBase;
+            const startElbow = currentElbow;
+            const startGripper = currentGripper;
+            const startTime = performance.now();
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Ease in-out
+                const eased = progress < 0.5
+                    ? 2 * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+                currentBase = Math.round(startBase + (targetBase - startBase) * eased);
+                currentElbow = Math.round(startElbow + (targetElbow - startElbow) * eased);
+                currentGripper = Math.round(startGripper + (targetGripper - startGripper) * eased);
+
+                // Update sliders
+                baseSlider.value = currentBase;
+                elbowSlider.value = currentElbow;
+                gripperSlider.value = currentGripper;
+
+                // Update displays
+                baseValue.textContent = currentBase + '°';
+                elbowValue.textContent = currentElbow + '°';
+                gripperValue.textContent = currentGripper > 60 ? 'Abierta' : 'Cerrada';
+
+                updateArm();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Predefined sequences
+        async function runSequence(name) {
+            const buttons = document.querySelectorAll('.seq-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            switch(name) {
+                case 'home':
+                    animateTo(90, 90, 90, 800);
+                    break;
+
+                case 'grab':
+                    // Sequence: open, down, close, up, rotate, down, open
+                    animateTo(90, 90, 90, 500);
+                    await sleep(600);
+                    animateTo(90, 50, 90, 600);
+                    await sleep(700);
+                    animateTo(90, 50, 30, 400);
+                    await sleep(500);
+                    animateTo(90, 120, 30, 600);
+                    await sleep(700);
+                    animateTo(30, 120, 30, 800);
+                    await sleep(900);
+                    animateTo(30, 50, 30, 600);
+                    await sleep(700);
+                    animateTo(30, 50, 90, 400);
+                    await sleep(500);
+                    animateTo(90, 90, 90, 800);
+                    break;
+
+                case 'wave':
+                    animateTo(90, 130, 90, 500);
+                    await sleep(600);
+                    for (let i = 0; i < 3; i++) {
+                        animateTo(120, 130, 90, 300);
+                        await sleep(350);
+                        animateTo(60, 130, 90, 300);
+                        await sleep(350);
+                    }
+                    animateTo(90, 90, 90, 500);
+                    break;
+            }
+
+            setTimeout(() => {
+                buttons.forEach(btn => btn.classList.remove('active'));
+            }, 500);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initial update
+        updateArm();
+    </script>
+</body>
+</html>
