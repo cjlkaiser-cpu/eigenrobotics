@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P6: Control Remoto IR - EigenRobotics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #1a1a24;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #8b5cf6;
+            --accent-dim: rgba(139, 92, 246, 0.1);
+            --accent-glow: rgba(139, 92, 246, 0.4);
+            --ir-beam: #c084fc;
+            --led-red: #ef4444;
+            --led-green: #22c55e;
+            --led-blue: #3b82f6;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+        }
+
+        .hero-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--ir-beam));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Content */
+        .content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem 4rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .card p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Result Preview */
+        .result-preview {
+            background: linear-gradient(135deg, var(--bg-card), rgba(139, 92, 246, 0.05));
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--ir-beam), var(--accent));
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-desc {
+            color: var(--text-secondary);
+        }
+
+        /* IR Explanation */
+        .ir-explanation {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .ir-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .ir-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .ir-card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .ir-card h3 {
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .ir-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* How IR Works Diagram */
+        .ir-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ir-diagram-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            padding: 2rem 0;
+        }
+
+        .ir-device {
+            text-align: center;
+        }
+
+        .ir-remote {
+            width: 80px;
+            height: 160px;
+            background: linear-gradient(180deg, #374151, #1f2937);
+            border-radius: 10px 10px 40px 40px;
+            position: relative;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .ir-remote-led {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background: #1a1a24;
+            border-radius: 50%;
+            border: 2px solid #4b5563;
+        }
+
+        .ir-remote-led.active {
+            background: var(--ir-beam);
+            box-shadow: 0 0 20px var(--ir-beam);
+            animation: pulse-ir 0.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-ir {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .ir-remote-buttons {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        .ir-btn {
+            width: 16px;
+            height: 16px;
+            background: #4b5563;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .ir-btn:hover {
+            background: #6b7280;
+        }
+
+        .ir-btn:active,
+        .ir-btn.pressed {
+            background: var(--accent);
+            transform: scale(0.9);
+        }
+
+        .ir-beam-container {
+            width: 150px;
+            height: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ir-beam-wave {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 100%;
+            height: 4px;
+            background: transparent;
+        }
+
+        .ir-beam-wave.active {
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 5px,
+                var(--ir-beam) 5px,
+                var(--ir-beam) 10px
+            );
+            animation: beam-move 0.3s linear infinite;
+        }
+
+        @keyframes beam-move {
+            0% { transform: translateY(-50%) translateX(-10px); }
+            100% { transform: translateY(-50%) translateX(10px); }
+        }
+
+        .ir-receiver-box {
+            width: 60px;
+            height: 50px;
+            background: linear-gradient(180deg, #1a1a24, #0f0f14);
+            border-radius: 8px;
+            position: relative;
+            margin: 0 auto 1rem;
+        }
+
+        .ir-receiver-dome {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 25px;
+            background: #1a1a24;
+            border-radius: 50% 50% 0 0;
+            border: 2px solid #374151;
+        }
+
+        .ir-receiver-dome.active {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: var(--accent);
+        }
+
+        .ir-receiver-pins {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .ir-receiver-pin {
+            width: 3px;
+            height: 15px;
+            background: #9ca3af;
+        }
+
+        /* VS1838B Diagram */
+        .sensor-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .sensor-svg {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .pin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .pin-table th,
+        .pin-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pin-table th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pin-table td {
+            color: var(--text-secondary);
+        }
+
+        .pin-label {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .pin-out { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .pin-gnd { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+        .pin-vcc { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        /* Circuit Diagram */
+        .circuit-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            overflow-x: auto;
+        }
+
+        .circuit-svg {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Hexadecimal Explanation */
+        .hex-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hex-example {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .hex-code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            padding: 1rem 2rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            border: 2px solid var(--accent);
+        }
+
+        .hex-arrow {
+            font-size: 2rem;
+            color: var(--text-dim);
+        }
+
+        .hex-meaning {
+            text-align: center;
+        }
+
+        .hex-meaning-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .hex-meaning-desc {
+            color: var(--text-secondary);
+        }
+
+        .hex-digits {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hex-digit {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .hex-digit:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* Code Table */
+        .code-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .code-table th,
+        .code-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-table th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .code-table code {
+            background: var(--bg-code);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ir-beam);
+        }
+
+        /* Library Installation */
+        .library-steps {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .library-step {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .library-step-num {
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .library-step-text {
+            color: var(--text-secondary);
+        }
+
+        .library-step-text strong {
+            color: var(--text-primary);
+        }
+
+        /* Code Section */
+        .code-block {
+            background: var(--bg-code);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .code-header {
+            background: rgba(139, 92, 246, 0.1);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Code Explanation Cards */
+        .code-explain {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .code-explain-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-code);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .code-explain-line {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .code-explain-text {
+            color: var(--text-secondary);
+        }
+
+        /* Interactive Demo */
+        .demo-container {
+            background: linear-gradient(135deg, var(--bg-card), rgba(139, 92, 246, 0.05));
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .demo-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .demo-title h3 {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 700px) {
+            .demo-area {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        /* Remote Control */
+        .demo-remote {
+            width: 180px;
+            height: 320px;
+            background: linear-gradient(180deg, #374151, #1f2937);
+            border-radius: 20px 20px 80px 80px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        .demo-remote-ir {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: #1a1a24;
+            border-radius: 50%;
+            border: 3px solid #4b5563;
+        }
+
+        .demo-remote-ir.active {
+            background: var(--ir-beam);
+            box-shadow: 0 0 30px var(--ir-beam), 0 0 60px var(--accent);
+            animation: ir-pulse 0.15s ease-in-out infinite;
+        }
+
+        @keyframes ir-pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 30px var(--ir-beam); }
+            50% { opacity: 0.5; box-shadow: 0 0 15px var(--ir-beam); }
+        }
+
+        .demo-remote-screen {
+            width: 100%;
+            height: 40px;
+            background: #1a1a24;
+            border-radius: 5px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--accent);
+            border: 1px solid #374151;
+        }
+
+        .demo-remote-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .demo-btn {
+            aspect-ratio: 1;
+            background: #4b5563;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 3px 0 #1f2937;
+        }
+
+        .demo-btn:hover {
+            background: #6b7280;
+        }
+
+        .demo-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #1f2937;
+        }
+
+        .demo-btn.btn-red { background: var(--led-red); box-shadow: 0 3px 0 #991b1b; }
+        .demo-btn.btn-red:hover { background: #f87171; }
+        .demo-btn.btn-green { background: var(--led-green); box-shadow: 0 3px 0 #166534; }
+        .demo-btn.btn-green:hover { background: #4ade80; }
+        .demo-btn.btn-blue { background: var(--led-blue); box-shadow: 0 3px 0 #1e40af; }
+        .demo-btn.btn-blue:hover { background: #60a5fa; }
+
+        .demo-btn-off {
+            grid-column: span 3;
+            background: #374151;
+            aspect-ratio: auto;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        /* LEDs Display */
+        .demo-leds {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .demo-led-row {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .demo-led {
+            width: 60px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .demo-led-bulb {
+            width: 30px;
+            height: 40px;
+            border-radius: 50% 50% 40% 40%;
+            background: #2a2a35;
+            border: 2px solid #4b5563;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .demo-led-bulb::after {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 8px;
+            height: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .demo-led-bulb.red.on {
+            background: var(--led-red);
+            box-shadow: 0 0 30px var(--led-red), 0 0 60px var(--led-red);
+            border-color: var(--led-red);
+        }
+
+        .demo-led-bulb.green.on {
+            background: var(--led-green);
+            box-shadow: 0 0 30px var(--led-green), 0 0 60px var(--led-green);
+            border-color: var(--led-green);
+        }
+
+        .demo-led-bulb.blue.on {
+            background: var(--led-blue);
+            box-shadow: 0 0 30px var(--led-blue), 0 0 60px var(--led-blue);
+            border-color: var(--led-blue);
+        }
+
+        .demo-led-legs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .demo-led-leg {
+            width: 3px;
+            height: 20px;
+            background: #9ca3af;
+        }
+
+        .demo-led-leg.short {
+            height: 15px;
+        }
+
+        .demo-led-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* IR Beam Animation */
+        .demo-ir-beam {
+            position: absolute;
+            top: 50%;
+            left: calc(50% - 100px);
+            width: 200px;
+            height: 40px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        .demo-ir-beam.active {
+            opacity: 1;
+        }
+
+        .demo-ir-wave {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--ir-beam), transparent);
+            transform: translateY(-50%);
+            animation: wave-travel 0.3s ease-out;
+        }
+
+        @keyframes wave-travel {
+            0% { width: 0; opacity: 1; }
+            100% { width: 100%; opacity: 0; }
+        }
+
+        /* Serial Monitor */
+        .demo-serial {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .demo-serial-header {
+            background: #161b22;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-serial-baud {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+        }
+
+        .demo-serial-output {
+            padding: 12px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .demo-serial-line {
+            color: #8b949e;
+            margin-bottom: 4px;
+        }
+
+        .demo-serial-line.code {
+            color: var(--ir-beam);
+        }
+
+        .demo-serial-line.action {
+            color: var(--led-green);
+        }
+
+        /* Discovery Mode */
+        .discovery-box {
+            background: linear-gradient(135deg, var(--bg-card), rgba(139, 92, 246, 0.1));
+            border: 2px dashed var(--accent);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .discovery-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--accent);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .discovery-steps {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .discovery-step {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .discovery-step-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .discovery-step-text {
+            color: var(--text-secondary);
+            padding-top: 4px;
+        }
+
+        .discovery-step-text strong {
+            color: var(--text-primary);
+        }
+
+        /* Wokwi Embed */
+        .wokwi-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .wokwi-header {
+            background: var(--bg-code);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .wokwi-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .wokwi-dot.red { background: #ef4444; }
+        .wokwi-dot.yellow { background: #eab308; }
+        .wokwi-dot.green { background: #22c55e; }
+
+        .wokwi-title {
+            margin-left: auto;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .wokwi-embed {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Steps Section */
+        .steps-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .step-item:hover {
+            border-color: var(--accent);
+        }
+
+        .step-num {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Experiments */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .experiment-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-card h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .experiment-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Tip Box */
+        .tip-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tip-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tip-text {
+            color: var(--text-secondary);
+        }
+
+        .tip-text strong {
+            color: #22c55e;
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .warning-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .warning-text {
+            color: var(--text-secondary);
+        }
+
+        .warning-text strong {
+            color: #f59e0b;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        .footer-copy {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="../index.html" class="nav-logo orbitron">EIGENROBOTICS</a>
+        <div class="nav-links">
+            <a href="#hardware">Hardware</a>
+            <a href="#codigo">Codigo</a>
+            <a href="#demo">Demo</a>
+            <a href="#pasos">Pasos</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-level orbitron">Proyecto 6</div>
+        <h1 class="orbitron">Control Remoto IR</h1>
+        <p class="hero-subtitle">
+            Controla tu Arduino con un mando a distancia infrarrojo.
+            Comunica comandos invisibles a traves del aire.
+        </p>
+    </section>
+
+    <!-- Content -->
+    <main class="content">
+        <!-- Result -->
+        <section class="section">
+            <div class="result-preview">
+                <div class="result-icon">📡</div>
+                <div class="result-text">Mando a Distancia Magico</div>
+                <p class="result-desc">Pulsa botones del mando y controla LEDs sin cables. Como la TV, pero tu lo programas.</p>
+            </div>
+        </section>
+
+        <!-- What is IR -->
+        <section class="section" id="hardware">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2 class="section-title">Como Funciona la Luz Infrarroja</h2>
+            </div>
+
+            <div class="ir-explanation">
+                <div class="ir-card">
+                    <div class="ir-card-icon">👁️</div>
+                    <h3>Luz Invisible</h3>
+                    <p>El infrarrojo es luz que nuestros ojos no pueden ver, pero las camaras y sensores si la detectan.</p>
+                </div>
+                <div class="ir-card">
+                    <div class="ir-card-icon">📺</div>
+                    <h3>En Tu Casa</h3>
+                    <p>Tu TV, aire acondicionado y otros aparatos usan esta misma tecnologia para recibir comandos.</p>
+                </div>
+                <div class="ir-card">
+                    <div class="ir-card-icon">🔢</div>
+                    <h3>Codigos Unicos</h3>
+                    <p>Cada boton envia un patron diferente de pulsos, como un codigo secreto que Arduino descifra.</p>
+                </div>
+            </div>
+
+            <!-- How IR Communication Works -->
+            <div class="ir-diagram" style="margin-top: 1.5rem;">
+                <h3 style="color: var(--accent); margin-bottom: 1.5rem; text-align: center;">Comunicacion IR en Accion</h3>
+                <div class="ir-diagram-container" id="irDiagram">
+                    <div class="ir-device">
+                        <div class="ir-remote" id="miniRemote">
+                            <div class="ir-remote-led" id="miniRemoteLed"></div>
+                            <div class="ir-remote-buttons">
+                                <div class="ir-btn" onclick="triggerIR()"></div>
+                                <div class="ir-btn" onclick="triggerIR()"></div>
+                                <div class="ir-btn" onclick="triggerIR()"></div>
+                                <div class="ir-btn" onclick="triggerIR()"></div>
+                                <div class="ir-btn" onclick="triggerIR()"></div>
+                                <div class="ir-btn" onclick="triggerIR()"></div>
+                            </div>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Mando IR</div>
+                    </div>
+
+                    <div class="ir-beam-container">
+                        <div class="ir-beam-wave" id="irBeamWave"></div>
+                    </div>
+
+                    <div class="ir-device">
+                        <div class="ir-receiver-box">
+                            <div class="ir-receiver-dome" id="receiverDome"></div>
+                            <div class="ir-receiver-pins">
+                                <div class="ir-receiver-pin"></div>
+                                <div class="ir-receiver-pin"></div>
+                                <div class="ir-receiver-pin"></div>
+                            </div>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Receptor VS1838B</div>
+                    </div>
+                </div>
+                <p style="text-align: center; color: var(--text-dim); font-size: 0.9rem;">Haz clic en los botones del mando para ver la transmision</p>
+            </div>
+        </section>
+
+        <!-- VS1838B Sensor -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2 class="section-title">El Receptor VS1838B</h2>
+            </div>
+
+            <div class="sensor-diagram">
+                <svg class="sensor-svg" viewBox="0 0 500 300">
+                    <!-- Background -->
+                    <rect x="0" y="0" width="500" height="300" fill="#12121a"/>
+
+                    <!-- VS1838B Body -->
+                    <g transform="translate(200, 50)">
+                        <!-- Main body -->
+                        <rect x="0" y="60" width="100" height="80" rx="5" fill="#1a1a24" stroke="#4b5563" stroke-width="2"/>
+
+                        <!-- Dome (sensor window) -->
+                        <ellipse cx="50" cy="60" rx="35" ry="40" fill="#1a1a24" stroke="#4b5563" stroke-width="2"/>
+                        <ellipse cx="50" cy="55" rx="25" ry="30" fill="rgba(139, 92, 246, 0.2)" stroke="none"/>
+
+                        <!-- IR symbol -->
+                        <text x="50" y="65" text-anchor="middle" fill="#8b5cf6" font-size="24">📡</text>
+
+                        <!-- Pins -->
+                        <line x1="20" y1="140" x2="20" y2="190" stroke="#9ca3af" stroke-width="4"/>
+                        <line x1="50" y1="140" x2="50" y2="190" stroke="#9ca3af" stroke-width="4"/>
+                        <line x1="80" y1="140" x2="80" y2="190" stroke="#9ca3af" stroke-width="4"/>
+
+                        <!-- Pin labels -->
+                        <text x="20" y="210" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="bold">OUT</text>
+                        <text x="50" y="210" text-anchor="middle" fill="#9ca3af" font-size="12" font-weight="bold">GND</text>
+                        <text x="80" y="210" text-anchor="middle" fill="#ef4444" font-size="12" font-weight="bold">VCC</text>
+
+                        <!-- Arduino pin labels -->
+                        <text x="20" y="230" text-anchor="middle" fill="#8b5cf6" font-size="11">Pin 11</text>
+                        <text x="50" y="230" text-anchor="middle" fill="#6b7280" font-size="11">GND</text>
+                        <text x="80" y="230" text-anchor="middle" fill="#ef4444" font-size="11">5V</text>
+                    </g>
+
+                    <!-- View indicator -->
+                    <text x="250" y="280" text-anchor="middle" fill="#64748b" font-size="12">Vista frontal (mirando la parte abombada)</text>
+
+                    <!-- Component label -->
+                    <text x="250" y="30" text-anchor="middle" fill="#8b5cf6" font-size="16" font-weight="bold">VS1838B - Receptor Infrarrojo</text>
+                </svg>
+
+                <table class="pin-table">
+                    <thead>
+                        <tr>
+                            <th>Pin</th>
+                            <th>Nombre</th>
+                            <th>Conectar a</th>
+                            <th>Funcion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="pin-label pin-out">OUT</span></td>
+                            <td>Salida de datos</td>
+                            <td>Pin 11</td>
+                            <td>Envia la senal decodificada a Arduino</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pin-label pin-gnd">GND</span></td>
+                            <td>Tierra</td>
+                            <td>GND</td>
+                            <td>Referencia de voltaje (0V)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="pin-label pin-vcc">VCC</span></td>
+                            <td>Alimentacion</td>
+                            <td>5V</td>
+                            <td>Energia para el sensor (5 voltios)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tip-box">
+                <div class="tip-icon">💡</div>
+                <div class="tip-text">
+                    <strong>Tip:</strong> El orden de los pines puede variar segun el fabricante. Busca las letras grabadas en el sensor o consulta su datasheet.
+                </div>
+            </div>
+        </section>
+
+        <!-- Circuit Diagram -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2 class="section-title">Diagrama del Circuito</h2>
+            </div>
+
+            <div class="circuit-container">
+                <svg class="circuit-svg" viewBox="0 0 800 500">
+                    <!-- Background -->
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="800" height="500" fill="#12121a"/>
+                    <rect width="800" height="500" fill="url(#grid)"/>
+
+                    <!-- Title -->
+                    <text x="400" y="30" text-anchor="middle" fill="#8b5cf6" font-size="16" font-weight="bold">Circuito Control Remoto IR</text>
+
+                    <!-- Arduino UNO -->
+                    <g transform="translate(50, 100)">
+                        <rect x="0" y="0" width="180" height="280" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+                        <text x="90" y="25" text-anchor="middle" fill="white" font-size="14" font-weight="bold">ARDUINO UNO</text>
+
+                        <!-- USB -->
+                        <rect x="60" y="250" width="60" height="30" rx="3" fill="#374151"/>
+                        <text x="90" y="270" text-anchor="middle" fill="#9ca3af" font-size="10">USB</text>
+
+                        <!-- Digital Pins -->
+                        <text x="160" y="55" text-anchor="end" fill="#64748b" font-size="10">DIGITAL</text>
+
+                        <!-- Pin 11 (IR) -->
+                        <circle cx="170" cy="75" r="6" fill="#8b5cf6"/>
+                        <text x="155" y="78" text-anchor="end" fill="white" font-size="10">11</text>
+
+                        <!-- Pin 10 (LED Azul) -->
+                        <circle cx="170" cy="95" r="6" fill="#3b82f6"/>
+                        <text x="155" y="98" text-anchor="end" fill="white" font-size="10">10</text>
+
+                        <!-- Pin 9 (LED Verde) -->
+                        <circle cx="170" cy="115" r="6" fill="#22c55e"/>
+                        <text x="155" y="118" text-anchor="end" fill="white" font-size="10">9</text>
+
+                        <!-- Pin 8 (LED Rojo) -->
+                        <circle cx="170" cy="135" r="6" fill="#ef4444"/>
+                        <text x="155" y="138" text-anchor="end" fill="white" font-size="10">8</text>
+
+                        <!-- Power Pins -->
+                        <text x="160" y="175" text-anchor="end" fill="#64748b" font-size="10">POWER</text>
+                        <circle cx="170" cy="195" r="6" fill="#ef4444"/>
+                        <text x="155" y="198" text-anchor="end" fill="white" font-size="10">5V</text>
+                        <circle cx="170" cy="215" r="6" fill="#374151" stroke="#6b7280"/>
+                        <text x="155" y="218" text-anchor="end" fill="white" font-size="10">GND</text>
+                    </g>
+
+                    <!-- Breadboard section -->
+                    <g transform="translate(280, 80)">
+                        <!-- Breadboard outline -->
+                        <rect x="0" y="0" width="480" height="380" rx="10" fill="#2a2a35" stroke="#4b5563" stroke-width="2"/>
+                        <text x="240" y="25" text-anchor="middle" fill="#64748b" font-size="12">PROTOBOARD</text>
+
+                        <!-- Power rails -->
+                        <line x1="20" y1="45" x2="460" y2="45" stroke="#ef4444" stroke-width="3"/>
+                        <text x="15" y="48" text-anchor="end" fill="#ef4444" font-size="10">+</text>
+                        <line x1="20" y1="60" x2="460" y2="60" stroke="#3b82f6" stroke-width="3"/>
+                        <text x="15" y="63" text-anchor="end" fill="#3b82f6" font-size="10">-</text>
+
+                        <!-- VS1838B Receptor -->
+                        <g transform="translate(60, 90)">
+                            <rect x="0" y="20" width="60" height="50" rx="5" fill="#1a1a24" stroke="#8b5cf6" stroke-width="2"/>
+                            <ellipse cx="30" cy="20" rx="25" ry="25" fill="#1a1a24" stroke="#8b5cf6" stroke-width="2"/>
+                            <ellipse cx="30" cy="15" rx="15" ry="15" fill="rgba(139, 92, 246, 0.3)"/>
+                            <text x="30" y="25" text-anchor="middle" fill="#8b5cf6" font-size="16">IR</text>
+                            <text x="30" y="90" text-anchor="middle" fill="#c084fc" font-size="10">VS1838B</text>
+
+                            <!-- Pins -->
+                            <line x1="10" y1="70" x2="10" y2="100" stroke="#22c55e" stroke-width="3"/>
+                            <line x1="30" y1="70" x2="30" y2="100" stroke="#6b7280" stroke-width="3"/>
+                            <line x1="50" y1="70" x2="50" y2="100" stroke="#ef4444" stroke-width="3"/>
+                        </g>
+
+                        <!-- LED Rojo -->
+                        <g transform="translate(180, 130)">
+                            <ellipse cx="15" cy="0" rx="12" ry="18" fill="rgba(239, 68, 68, 0.3)" stroke="#ef4444" stroke-width="2"/>
+                            <text x="15" y="5" text-anchor="middle" fill="#ef4444" font-size="10">R</text>
+                            <line x1="10" y1="18" x2="10" y2="45" stroke="#9ca3af" stroke-width="2"/>
+                            <line x1="20" y1="18" x2="20" y2="40" stroke="#9ca3af" stroke-width="2"/>
+                            <text x="15" y="60" text-anchor="middle" fill="#ef4444" font-size="9">LED Rojo</text>
+
+                            <!-- Resistor -->
+                            <line x1="20" y1="-20" x2="20" y2="-35" stroke="#9ca3af" stroke-width="2"/>
+                            <rect x="12" y="-55" width="16" height="20" rx="2" fill="#8b6914" stroke="#d4a017" stroke-width="1"/>
+                            <line x1="20" y1="-55" x2="20" y2="-70" stroke="#9ca3af" stroke-width="2"/>
+                        </g>
+
+                        <!-- LED Verde -->
+                        <g transform="translate(260, 130)">
+                            <ellipse cx="15" cy="0" rx="12" ry="18" fill="rgba(34, 197, 94, 0.3)" stroke="#22c55e" stroke-width="2"/>
+                            <text x="15" y="5" text-anchor="middle" fill="#22c55e" font-size="10">G</text>
+                            <line x1="10" y1="18" x2="10" y2="45" stroke="#9ca3af" stroke-width="2"/>
+                            <line x1="20" y1="18" x2="20" y2="40" stroke="#9ca3af" stroke-width="2"/>
+                            <text x="15" y="60" text-anchor="middle" fill="#22c55e" font-size="9">LED Verde</text>
+
+                            <!-- Resistor -->
+                            <line x1="20" y1="-20" x2="20" y2="-35" stroke="#9ca3af" stroke-width="2"/>
+                            <rect x="12" y="-55" width="16" height="20" rx="2" fill="#8b6914" stroke="#d4a017" stroke-width="1"/>
+                            <line x1="20" y1="-55" x2="20" y2="-70" stroke="#9ca3af" stroke-width="2"/>
+                        </g>
+
+                        <!-- LED Azul -->
+                        <g transform="translate(340, 130)">
+                            <ellipse cx="15" cy="0" rx="12" ry="18" fill="rgba(59, 130, 246, 0.3)" stroke="#3b82f6" stroke-width="2"/>
+                            <text x="15" y="5" text-anchor="middle" fill="#3b82f6" font-size="10">B</text>
+                            <line x1="10" y1="18" x2="10" y2="45" stroke="#9ca3af" stroke-width="2"/>
+                            <line x1="20" y1="18" x2="20" y2="40" stroke="#9ca3af" stroke-width="2"/>
+                            <text x="15" y="60" text-anchor="middle" fill="#3b82f6" font-size="9">LED Azul</text>
+
+                            <!-- Resistor -->
+                            <line x1="20" y1="-20" x2="20" y2="-35" stroke="#9ca3af" stroke-width="2"/>
+                            <rect x="12" y="-55" width="16" height="20" rx="2" fill="#8b6914" stroke="#d4a017" stroke-width="1"/>
+                            <line x1="20" y1="-55" x2="20" y2="-70" stroke="#9ca3af" stroke-width="2"/>
+                        </g>
+
+                        <!-- Connection labels -->
+                        <text x="80" y="220" text-anchor="middle" fill="#8b5cf6" font-size="9">Pin 11</text>
+                        <text x="200" y="80" text-anchor="middle" fill="#ef4444" font-size="9">Pin 8</text>
+                        <text x="280" y="80" text-anchor="middle" fill="#22c55e" font-size="9">Pin 9</text>
+                        <text x="360" y="80" text-anchor="middle" fill="#3b82f6" font-size="9">Pin 10</text>
+
+                        <!-- GND rail connections -->
+                        <text x="240" y="250" text-anchor="middle" fill="#64748b" font-size="10">Todos los GND de LEDs conectados a riel negativo (-)</text>
+                    </g>
+
+                    <!-- Wires from Arduino -->
+                    <!-- Pin 11 to IR -->
+                    <path d="M 220 175 Q 280 175 340 250" stroke="#8b5cf6" stroke-width="2" fill="none"/>
+                    <!-- Pin 10 to Blue LED -->
+                    <path d="M 220 195 Q 450 195 640 190" stroke="#3b82f6" stroke-width="2" fill="none"/>
+                    <!-- Pin 9 to Green LED -->
+                    <path d="M 220 215 Q 400 215 560 190" stroke="#22c55e" stroke-width="2" fill="none"/>
+                    <!-- Pin 8 to Red LED -->
+                    <path d="M 220 235 Q 350 235 480 190" stroke="#ef4444" stroke-width="2" fill="none"/>
+                    <!-- 5V to power rail -->
+                    <path d="M 220 295 L 280 295 L 280 125" stroke="#ef4444" stroke-width="2" fill="none"/>
+                    <!-- GND to ground rail -->
+                    <path d="M 220 315 L 260 315 L 260 140" stroke="#6b7280" stroke-width="2" fill="none"/>
+
+                    <!-- Legend -->
+                    <g transform="translate(300, 420)">
+                        <text x="0" y="0" fill="#64748b" font-size="11">Componentes:</text>
+                        <circle cx="120" cy="-4" r="5" fill="#8b5cf6"/>
+                        <text x="130" y="0" fill="#c084fc" font-size="10">VS1838B</text>
+                        <circle cx="200" cy="-4" r="5" fill="#ef4444"/>
+                        <text x="210" y="0" fill="#ef4444" font-size="10">LED Rojo</text>
+                        <circle cx="280" cy="-4" r="5" fill="#22c55e"/>
+                        <text x="290" y="0" fill="#22c55e" font-size="10">LED Verde</text>
+                        <circle cx="370" cy="-4" r="5" fill="#3b82f6"/>
+                        <text x="380" y="0" fill="#3b82f6" font-size="10">LED Azul</text>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="warning-box">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    <strong>Importante:</strong> Cada LED necesita su resistencia de 220Ω. Sin ella, el LED se quemara.
+                </div>
+            </div>
+        </section>
+
+        <!-- Hexadecimal Codes -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2 class="section-title">Codigos Hexadecimales</h2>
+            </div>
+
+            <div class="hex-box">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Cada boton del mando envia un numero unico. Arduino lo recibe en formato <strong style="color: var(--accent);">hexadecimal</strong> (base 16), que usa numeros 0-9 y letras A-F.
+                </p>
+
+                <div class="hex-example">
+                    <div class="hex-code">0xF30CFF00</div>
+                    <div class="hex-arrow">→</div>
+                    <div class="hex-meaning">
+                        <div class="hex-meaning-title">Boton "1"</div>
+                        <div class="hex-meaning-desc">Codigo unico del mando ELEGOO</div>
+                    </div>
+                </div>
+
+                <p style="color: var(--text-secondary); text-align: center; margin-top: 1.5rem;">
+                    El prefijo <code style="color: var(--ir-beam);">0x</code> indica que es hexadecimal
+                </p>
+
+                <div class="hex-digits">
+                    <div class="hex-digit">0</div>
+                    <div class="hex-digit">1</div>
+                    <div class="hex-digit">2</div>
+                    <div class="hex-digit">3</div>
+                    <div class="hex-digit">4</div>
+                    <div class="hex-digit">5</div>
+                    <div class="hex-digit">6</div>
+                    <div class="hex-digit">7</div>
+                    <div class="hex-digit">8</div>
+                    <div class="hex-digit">9</div>
+                    <div class="hex-digit">A</div>
+                    <div class="hex-digit">B</div>
+                    <div class="hex-digit">C</div>
+                    <div class="hex-digit">D</div>
+                    <div class="hex-digit">E</div>
+                    <div class="hex-digit">F</div>
+                </div>
+
+                <table class="code-table" style="margin-top: 2rem;">
+                    <thead>
+                        <tr>
+                            <th>Boton</th>
+                            <th>Codigo (mando ELEGOO)</th>
+                            <th>Accion en nuestro codigo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><code>0xF30CFF00</code></td>
+                            <td>Enciende LED Rojo</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><code>0xE718FF00</code></td>
+                            <td>Enciende LED Verde</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><code>0xA15EFF00</code></td>
+                            <td>Enciende LED Azul</td>
+                        </tr>
+                        <tr>
+                            <td>0</td>
+                            <td><code>0xE916FF00</code></td>
+                            <td>Apaga todos los LEDs</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="tip-box">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-text">
+                        <strong>Cada mando es diferente:</strong> Los codigos de tu mando pueden ser distintos. Por eso primero descubrimos los codigos con el Monitor Serial.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Library Installation -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2 class="section-title">Instalar Libreria IRremote</h2>
+            </div>
+
+            <div class="card">
+                <p>Para decodificar las senales IR, necesitamos la libreria <strong style="color: var(--accent);">IRremote</strong>. Es como un traductor que convierte los pulsos de luz en numeros que Arduino entiende.</p>
+
+                <div class="library-steps" style="margin-top: 1.5rem;">
+                    <div class="library-step">
+                        <div class="library-step-num">1</div>
+                        <div class="library-step-text">
+                            Abre Arduino IDE y ve a <strong>Sketch → Include Library → Manage Libraries...</strong>
+                        </div>
+                    </div>
+                    <div class="library-step">
+                        <div class="library-step-num">2</div>
+                        <div class="library-step-text">
+                            En el buscador escribe <strong>"IRremote"</strong>
+                        </div>
+                    </div>
+                    <div class="library-step">
+                        <div class="library-step-num">3</div>
+                        <div class="library-step-text">
+                            Busca la libreria de <strong>shirriff/z3t0</strong> (es la mas popular)
+                        </div>
+                    </div>
+                    <div class="library-step">
+                        <div class="library-step-num">4</div>
+                        <div class="library-step-text">
+                            Haz clic en <strong>Install</strong> y espera a que termine
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section class="section" id="codigo">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2 class="section-title">El Codigo</h2>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-filename">p6_control_remoto.ino</span>
+                </div>
+                <pre><code class="language-cpp">#include &lt;IRremote.hpp&gt;
+
+const int IR_PIN = 11;
+const int LED_ROJO = 8;
+const int LED_VERDE = 9;
+const int LED_AZUL = 10;
+
+// Codigos del mando (usa Monitor Serial para descubrir los tuyos)
+const uint32_t BOTON_1 = 0xF30CFF00;
+const uint32_t BOTON_2 = 0xE718FF00;
+const uint32_t BOTON_3 = 0xA15EFF00;
+const uint32_t BOTON_0 = 0xE916FF00;
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Control Remoto IR - EigenRobotics");
+  Serial.println("Pulsa botones del mando para ver sus codigos");
+
+  // Iniciar receptor IR
+  IrReceiver.begin(IR_PIN, ENABLE_LED_FEEDBACK);
+
+  // Configurar LEDs como salida
+  pinMode(LED_ROJO, OUTPUT);
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(LED_AZUL, OUTPUT);
+
+  apagarTodo();
+}
+
+void loop() {
+  if (IrReceiver.decode()) {
+    // Mostrar codigo recibido en Monitor Serial
+    Serial.print("Codigo recibido: 0x");
+    Serial.println(IrReceiver.decodedIRData.decodedRawData, HEX);
+
+    // Obtener el codigo
+    uint32_t codigo = IrReceiver.decodedIRData.decodedRawData;
+
+    // Ejecutar accion segun el boton
+    switch (codigo) {
+      case BOTON_1:
+        Serial.println("-> LED Rojo");
+        apagarTodo();
+        digitalWrite(LED_ROJO, HIGH);
+        break;
+
+      case BOTON_2:
+        Serial.println("-> LED Verde");
+        apagarTodo();
+        digitalWrite(LED_VERDE, HIGH);
+        break;
+
+      case BOTON_3:
+        Serial.println("-> LED Azul");
+        apagarTodo();
+        digitalWrite(LED_AZUL, HIGH);
+        break;
+
+      case BOTON_0:
+        Serial.println("-> Apagar todo");
+        apagarTodo();
+        break;
+
+      default:
+        Serial.println("-> Boton no asignado");
+        break;
+    }
+
+    // Preparar para siguiente senal
+    IrReceiver.resume();
+  }
+}
+
+void apagarTodo() {
+  digitalWrite(LED_ROJO, LOW);
+  digitalWrite(LED_VERDE, LOW);
+  digitalWrite(LED_AZUL, LOW);
+}</code></pre>
+            </div>
+
+            <div class="code-explain">
+                <div class="code-explain-item">
+                    <div class="code-explain-line">#include &lt;IRremote.hpp&gt;</div>
+                    <div class="code-explain-text">Importa la libreria que sabe "leer" senales infrarrojas</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">IrReceiver.begin()</div>
+                    <div class="code-explain-text">Enciende el receptor y lo prepara para escuchar</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">IrReceiver.decode()</div>
+                    <div class="code-explain-text">Pregunta: "¿Ha llegado alguna senal?" Devuelve true si hay mensaje</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">decodedRawData</div>
+                    <div class="code-explain-text">El numero hexadecimal que identifica que boton se pulso</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">switch (codigo)</div>
+                    <div class="code-explain-text">Como un semaforo: segun el codigo recibido, hace una cosa u otra</div>
+                </div>
+                <div class="code-explain-item">
+                    <div class="code-explain-line">IrReceiver.resume()</div>
+                    <div class="code-explain-text">Dice al receptor: "Ya procese esta senal, puedes escuchar la siguiente"</div>
+                </div>
+            </div>
+
+            <!-- Discovery Mode Box -->
+            <div class="discovery-box">
+                <div class="discovery-title">
+                    🔍 Como Descubrir Tus Codigos
+                </div>
+                <div class="discovery-steps">
+                    <div class="discovery-step">
+                        <div class="discovery-step-icon">1</div>
+                        <div class="discovery-step-text">
+                            <strong>Sube el codigo</strong> a tu Arduino
+                        </div>
+                    </div>
+                    <div class="discovery-step">
+                        <div class="discovery-step-icon">2</div>
+                        <div class="discovery-step-text">
+                            <strong>Abre el Monitor Serial</strong> (boton lupa arriba a la derecha, o Ctrl+Shift+M)
+                        </div>
+                    </div>
+                    <div class="discovery-step">
+                        <div class="discovery-step-icon">3</div>
+                        <div class="discovery-step-text">
+                            Asegurate de que dice <strong>9600 baud</strong> abajo a la derecha
+                        </div>
+                    </div>
+                    <div class="discovery-step">
+                        <div class="discovery-step-icon">4</div>
+                        <div class="discovery-step-text">
+                            <strong>Pulsa cada boton</strong> del mando apuntando al sensor
+                        </div>
+                    </div>
+                    <div class="discovery-step">
+                        <div class="discovery-step-icon">5</div>
+                        <div class="discovery-step-text">
+                            <strong>Anota los codigos</strong> que aparecen (ej: 0xF30CFF00)
+                        </div>
+                    </div>
+                    <div class="discovery-step">
+                        <div class="discovery-step-icon">6</div>
+                        <div class="discovery-step-text">
+                            <strong>Reemplaza</strong> los valores BOTON_1, BOTON_2, etc. con tus codigos
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Demo -->
+        <section class="section" id="demo">
+            <div class="section-header">
+                <div class="section-number">7</div>
+                <h2 class="section-title">Demo Interactivo</h2>
+            </div>
+
+            <div class="demo-container">
+                <div class="demo-title">
+                    <h3>Prueba el Control Remoto</h3>
+                    <p style="color: var(--text-secondary);">Pulsa los botones del mando para controlar los LEDs</p>
+                </div>
+
+                <div class="demo-area">
+                    <!-- Remote Control -->
+                    <div>
+                        <div class="demo-remote">
+                            <div class="demo-remote-ir" id="demoRemoteIR"></div>
+                            <div class="demo-remote-screen" id="remoteScreen">EIGENROBOTICS</div>
+                            <div class="demo-remote-buttons">
+                                <button class="demo-btn btn-red" onclick="pressButton(1, 'red')" title="Boton 1">1</button>
+                                <button class="demo-btn btn-green" onclick="pressButton(2, 'green')" title="Boton 2">2</button>
+                                <button class="demo-btn btn-blue" onclick="pressButton(3, 'blue')" title="Boton 3">3</button>
+                                <button class="demo-btn" onclick="pressButton(4, null)">4</button>
+                                <button class="demo-btn" onclick="pressButton(5, null)">5</button>
+                                <button class="demo-btn" onclick="pressButton(6, null)">6</button>
+                                <button class="demo-btn" onclick="pressButton(7, null)">7</button>
+                                <button class="demo-btn" onclick="pressButton(8, null)">8</button>
+                                <button class="demo-btn" onclick="pressButton(9, null)">9</button>
+                            </div>
+                            <button class="demo-btn demo-btn-off" onclick="pressButton(0, 'off')" title="Apagar todo">0 - OFF</button>
+                        </div>
+                    </div>
+
+                    <!-- LEDs -->
+                    <div class="demo-leds">
+                        <div class="demo-led-row">
+                            <div class="demo-led">
+                                <div class="demo-led-bulb red" id="ledRed"></div>
+                                <div class="demo-led-legs">
+                                    <div class="demo-led-leg"></div>
+                                    <div class="demo-led-leg short"></div>
+                                </div>
+                                <div class="demo-led-label">Rojo</div>
+                            </div>
+                            <div class="demo-led">
+                                <div class="demo-led-bulb green" id="ledGreen"></div>
+                                <div class="demo-led-legs">
+                                    <div class="demo-led-leg"></div>
+                                    <div class="demo-led-leg short"></div>
+                                </div>
+                                <div class="demo-led-label">Verde</div>
+                            </div>
+                            <div class="demo-led">
+                                <div class="demo-led-bulb blue" id="ledBlue"></div>
+                                <div class="demo-led-legs">
+                                    <div class="demo-led-leg"></div>
+                                    <div class="demo-led-leg short"></div>
+                                </div>
+                                <div class="demo-led-label">Azul</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Serial Monitor -->
+                <div class="demo-serial">
+                    <div class="demo-serial-header">
+                        <span>Monitor Serial</span>
+                        <span class="demo-serial-baud">9600 baud</span>
+                    </div>
+                    <div class="demo-serial-output" id="serialOutput">
+                        <div class="demo-serial-line">Control Remoto IR - EigenRobotics</div>
+                        <div class="demo-serial-line">Pulsa botones del mando para ver sus codigos</div>
+                        <div class="demo-serial-line"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Wokwi Simulator -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">8</div>
+                <h2 class="section-title">Simulador</h2>
+            </div>
+
+            <div class="wokwi-container">
+                <div class="wokwi-header">
+                    <span class="wokwi-dot red"></span>
+                    <span class="wokwi-dot yellow"></span>
+                    <span class="wokwi-dot green"></span>
+                    <span class="wokwi-title">Wokwi Simulator</span>
+                </div>
+                <iframe
+                    class="wokwi-embed"
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    loading="lazy"
+                    title="Simulador Wokwi">
+                </iframe>
+            </div>
+
+            <div class="tip-box">
+                <div class="tip-icon">💡</div>
+                <div class="tip-text">
+                    <strong>Nota:</strong> En el simulador de Wokwi puedes anadir un receptor IR virtual y probar el codigo. Busca "IR Receiver" en los componentes.
+                </div>
+            </div>
+        </section>
+
+        <!-- Steps -->
+        <section class="section" id="pasos">
+            <div class="section-header">
+                <div class="section-number">9</div>
+                <h2 class="section-title">Pasos de Construccion</h2>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>Prepara la protoboard</h4>
+                        <p>Conecta 5V de Arduino al riel positivo (+) y GND al riel negativo (-)</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>Coloca el receptor IR</h4>
+                        <p>Mira la parte abombada. De izquierda a derecha: OUT (pin 11), GND (riel -), VCC (riel +)</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>Conecta el LED Rojo</h4>
+                        <p>Pata larga (+) a resistencia 220Ω, resistencia al pin 8. Pata corta (-) al riel GND</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h4>Conecta el LED Verde</h4>
+                        <p>Igual que el rojo, pero la resistencia va al pin 9</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <h4>Conecta el LED Azul</h4>
+                        <p>Igual que los anteriores, con la resistencia al pin 10</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">6</div>
+                    <div class="step-content">
+                        <h4>Instala la libreria</h4>
+                        <p>Arduino IDE → Sketch → Include Library → Manage Libraries → Buscar "IRremote" → Install</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">7</div>
+                    <div class="step-content">
+                        <h4>Sube el codigo</h4>
+                        <p>Copia el codigo y subelo a Arduino. Abre el Monitor Serial (9600 baud)</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">8</div>
+                    <div class="step-content">
+                        <h4>Descubre tus codigos</h4>
+                        <p>Pulsa botones del mando y anota los codigos hexadecimales que aparecen</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">9</div>
+                    <div class="step-content">
+                        <h4>Personaliza el codigo</h4>
+                        <p>Reemplaza BOTON_1, BOTON_2, BOTON_3, BOTON_0 con los codigos de tu mando</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">10</div>
+                    <div class="step-content">
+                        <h4>Prueba y disfruta</h4>
+                        <p>Apunta el mando al receptor y controla los LEDs a distancia. ¡Magia!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-number">10</div>
+                <h2 class="section-title">Experimentos</h2>
+            </div>
+
+            <div class="experiments-grid">
+                <div class="experiment-card">
+                    <div class="experiment-icon">🌈</div>
+                    <h4>Modo Discoteca</h4>
+                    <p>Programa un boton para hacer un efecto de luces parpadeantes con los 3 LEDs</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🔆</div>
+                    <h4>Control de Brillo</h4>
+                    <p>Usa VOL+ y VOL- para subir y bajar el brillo de los LEDs con PWM (analogWrite)</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">📺</div>
+                    <h4>Otro Mando</h4>
+                    <p>Prueba con el mando de la TV o el aire acondicionado. ¿Que codigos tienen?</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🤖</div>
+                    <h4>Robot a Control Remoto</h4>
+                    <p>Combina este proyecto con P5 para controlar el robot con el mando IR</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🎵</div>
+                    <h4>Piano IR</h4>
+                    <p>Anade un buzzer y asigna cada boton numerico a una nota musical diferente</p>
+                </div>
+                <div class="experiment-card">
+                    <div class="experiment-icon">🚦</div>
+                    <h4>Semaforo a Distancia</h4>
+                    <p>Combina con P1 para controlar el semaforo con el mando. Un boton para cada fase</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="../index.html">Inicio</a>
+            <a href="p5-robot.html">← P5: Robot</a>
+            <a href="p7-brazo-robotico.html">P7: Brazo Robotico →</a>
+        </div>
+        <p class="footer-copy">EigenRobotics - Aprendiendo robotica en familia</p>
+    </footer>
+
+    <script>
+        // Highlight.js
+        hljs.highlightAll();
+
+        // IR Diagram Animation
+        function triggerIR() {
+            const led = document.getElementById('miniRemoteLed');
+            const beam = document.getElementById('irBeamWave');
+            const dome = document.getElementById('receiverDome');
+
+            led.classList.add('active');
+            beam.classList.add('active');
+
+            setTimeout(() => {
+                dome.classList.add('active');
+            }, 200);
+
+            setTimeout(() => {
+                led.classList.remove('active');
+                beam.classList.remove('active');
+                dome.classList.remove('active');
+            }, 500);
+        }
+
+        // Demo functionality
+        const ledRed = document.getElementById('ledRed');
+        const ledGreen = document.getElementById('ledGreen');
+        const ledBlue = document.getElementById('ledBlue');
+        const remoteIR = document.getElementById('demoRemoteIR');
+        const remoteScreen = document.getElementById('remoteScreen');
+        const serialOutput = document.getElementById('serialOutput');
+
+        const buttonCodes = {
+            0: '0xE916FF00',
+            1: '0xF30CFF00',
+            2: '0xE718FF00',
+            3: '0xA15EFF00',
+            4: '0xF807FF00',
+            5: '0xEA15FF00',
+            6: '0xE619FF00',
+            7: '0xF20DFF00',
+            8: '0xE31CFF00',
+            9: '0xA55AFF00'
+        };
+
+        function turnOffAllLeds() {
+            ledRed.classList.remove('on');
+            ledGreen.classList.remove('on');
+            ledBlue.classList.remove('on');
+        }
+
+        function addSerialLine(text, type = '') {
+            const line = document.createElement('div');
+            line.className = 'demo-serial-line' + (type ? ' ' + type : '');
+            line.textContent = text;
+            serialOutput.appendChild(line);
+            serialOutput.scrollTop = serialOutput.scrollHeight;
+        }
+
+        function pressButton(num, color) {
+            // IR LED flash
+            remoteIR.classList.add('active');
+            setTimeout(() => remoteIR.classList.remove('active'), 300);
+
+            // Update screen
+            remoteScreen.textContent = 'BTN: ' + num;
+            setTimeout(() => {
+                remoteScreen.textContent = 'EIGENROBOTICS';
+            }, 1000);
+
+            // Add to serial
+            addSerialLine('Codigo recibido: ' + buttonCodes[num], 'code');
+
+            // Handle action
+            if (color === 'off') {
+                turnOffAllLeds();
+                addSerialLine('-> Apagar todo', 'action');
+            } else if (color === 'red') {
+                turnOffAllLeds();
+                ledRed.classList.add('on');
+                addSerialLine('-> LED Rojo', 'action');
+            } else if (color === 'green') {
+                turnOffAllLeds();
+                ledGreen.classList.add('on');
+                addSerialLine('-> LED Verde', 'action');
+            } else if (color === 'blue') {
+                turnOffAllLeds();
+                ledBlue.classList.add('on');
+                addSerialLine('-> LED Azul', 'action');
+            } else {
+                addSerialLine('-> Boton no asignado', '');
+            }
+
+            addSerialLine('', '');
+        }
+    </script>
+</body>
+</html>
