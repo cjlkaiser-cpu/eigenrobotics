@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P1: Semáforo LEGO - EigenRobotics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #1a1a24;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #eab308;
+            --accent-dim: rgba(234, 179, 8, 0.1);
+            --red: #ef4444;
+            --yellow: #eab308;
+            --green: #22c55e;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(234, 179, 8, 0.1) 0%, transparent 50%);
+        }
+
+        .hero-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Sections */
+        .section {
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .section-intro {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        /* Result Section */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .result-visual {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        /* Traffic Light Demo */
+        .traffic-light {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .traffic-led {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #333;
+            transition: all 0.3s;
+        }
+
+        .traffic-led.red.active {
+            background: var(--red);
+            box-shadow: 0 0 30px var(--red), 0 0 60px var(--red);
+        }
+
+        .traffic-led.yellow.active {
+            background: var(--yellow);
+            box-shadow: 0 0 30px var(--yellow), 0 0 60px var(--yellow);
+        }
+
+        .traffic-led.green.active {
+            background: var(--green);
+            box-shadow: 0 0 30px var(--green), 0 0 60px var(--green);
+        }
+
+        .led-label {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .result-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-text h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .result-list li:last-child {
+            border-bottom: none;
+        }
+
+        .result-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-dim);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        /* Components Grid */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .component-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .component-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .component-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+        }
+
+        .component-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .component-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Circuit Diagram */
+        .circuit-diagram {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .circuit-diagram h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .circuit-svg {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Explanation Card */
+        .explanation-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        .explanation-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .explanation-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .explanation-card .highlight {
+            background: var(--accent-dim);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        /* Code Section */
+        .code-container {
+            position: relative;
+            margin: 2rem 0;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e1e28;
+            padding: 0.75rem 1rem;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+
+        .code-filename {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .code-copy {
+            background: var(--accent);
+            border: none;
+            color: var(--bg-dark);
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .code-copy:hover {
+            transform: scale(1.05);
+        }
+
+        .code-copy.copied {
+            background: #10b981;
+        }
+
+        pre {
+            margin: 0;
+            border-radius: 0 0 12px 12px;
+            border: 1px solid var(--border);
+            border-top: none;
+        }
+
+        pre code {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        /* Code Explanation */
+        .code-explanation {
+            margin-top: 2rem;
+        }
+
+        .code-line {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .code-line:hover {
+            border-color: var(--accent);
+        }
+
+        .line-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .line-content h4 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .line-content h4 code {
+            background: var(--bg-code);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .line-content p {
+            color: var(--text-secondary);
+        }
+
+        /* Concepts Grid */
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .concept-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .concept-card h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concept-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .concept-card code {
+            background: var(--bg-code);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Simulator */
+        .simulator-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .simulator-header {
+            padding: 1rem 1.5rem;
+            background: rgba(234, 179, 8, 0.1);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .simulator-header h4 {
+            color: var(--accent);
+        }
+
+        .simulator-header a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .simulator-header a:hover {
+            color: var(--accent);
+        }
+
+        .simulator-embed {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Steps Timeline */
+        .steps-timeline {
+            position: relative;
+            margin: 2rem 0;
+            padding-left: 3rem;
+        }
+
+        .steps-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .step {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .step:last-child {
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            position: absolute;
+            left: -3rem;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-dark);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .step-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .step-content h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+        }
+
+        .step-tip {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--accent-dim);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .step-tip strong {
+            color: var(--accent);
+        }
+
+        /* Experiments Grid */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--accent);
+        }
+
+        .experiment-difficulty {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-card h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* LEGO Section */
+        .lego-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .lego-section h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lego-ideas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .lego-idea {
+            background: rgba(234, 179, 8, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .lego-idea span {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Navigation */
+        .project-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 3rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .nav-button:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .nav-button.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .nav-button-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-button-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-button-title {
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-text {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-meta {
+                gap: 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .code-line {
+                grid-template-columns: 1fr;
+            }
+
+            .line-number {
+                width: auto;
+                padding: 0.5rem 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .project-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="../showcase.html" class="nav-logo orbitron">EIGENROBOTICS</a>
+        <div class="nav-links">
+            <a href="#resultado">Resultado</a>
+            <a href="#hardware">Hardware</a>
+            <a href="#codigo">Codigo</a>
+            <a href="#simulador">Simulador</a>
+            <a href="#pasos">Paso a paso</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <span class="hero-level">Nivel 1 - Outputs</span>
+        <h1 class="hero-title orbitron">P1: SEMAFORO</h1>
+        <p class="hero-subtitle">
+            Un semaforo de verdad con 3 LEDs. Tu hijo construye el poste con LEGO, tu programas la secuencia.
+            Primer proyecto donde controlamos multiples salidas.
+        </p>
+        <div class="hero-meta">
+            <div class="meta-item">
+                <div class="meta-value orbitron">30</div>
+                <div class="meta-label">Minutos</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-value orbitron">7</div>
+                <div class="meta-label">Componentes</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-value orbitron">68</div>
+                <div class="meta-label">Lineas de codigo</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Resultado Section -->
+        <section class="section" id="resultado">
+            <div class="section-header">
+                <div class="section-number">01</div>
+                <h2 class="section-title">Que vamos a conseguir?</h2>
+                <p class="section-intro">
+                    Un semaforo funcional que cicla por verde, amarillo y rojo como uno de verdad.
+                    El mejor: tu hijo puede construir el poste o la calle con LEGO.
+                </p>
+            </div>
+
+            <div class="result-grid">
+                <div class="result-visual">
+                    <div class="traffic-light">
+                        <div class="traffic-led red" id="led-red"></div>
+                        <div class="traffic-led yellow" id="led-yellow"></div>
+                        <div class="traffic-led green" id="led-green"></div>
+                    </div>
+                    <p class="led-label">Secuencia: Verde (3s) - Amarillo (1s) - Rojo (3s)</p>
+                </div>
+                <div class="result-text">
+                    <h3>Lo que aprenderas:</h3>
+                    <ul class="result-list">
+                        <li>
+                            <span class="result-icon">1</span>
+                            <span>Controlar multiples LEDs con diferentes pines</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">2</span>
+                            <span>Crear secuencias de estados (maquina de estados)</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">3</span>
+                            <span>Usar constantes para tiempos configurables</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">4</span>
+                            <span>Crear funciones propias (apagarTodos)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hardware Section -->
+        <section class="section" id="hardware">
+            <div class="section-header">
+                <div class="section-number">02</div>
+                <h2 class="section-title">Hardware necesario</h2>
+                <p class="section-intro">
+                    Necesitamos 3 LEDs de diferentes colores. Cada uno con su resistencia protectora.
+                </p>
+            </div>
+
+            <div class="components-grid">
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="16" width="48" height="32" rx="2" fill="#0d9488" stroke="#14b8a6" stroke-width="2"/>
+                        <rect x="12" y="20" width="8" height="8" fill="#1e1e1e"/>
+                        <circle cx="52" cy="24" r="2" fill="#ef4444"/>
+                        <rect x="14" y="40" width="4" height="8" fill="#94a3b8"/>
+                        <rect x="20" y="40" width="4" height="8" fill="#94a3b8"/>
+                        <rect x="26" y="40" width="4" height="8" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">Arduino UNO</div>
+                    <div class="component-desc">El cerebro del semaforo</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <ellipse cx="32" cy="20" rx="12" ry="16" fill="#ef4444" opacity="0.3"/>
+                        <ellipse cx="32" cy="20" rx="8" ry="10" fill="#ef4444"/>
+                        <rect x="30" y="30" width="4" height="20" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">LED Rojo</div>
+                    <div class="component-desc">Pin 10 - ALTO</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <ellipse cx="32" cy="20" rx="12" ry="16" fill="#eab308" opacity="0.3"/>
+                        <ellipse cx="32" cy="20" rx="8" ry="10" fill="#eab308"/>
+                        <rect x="30" y="30" width="4" height="20" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">LED Amarillo</div>
+                    <div class="component-desc">Pin 9 - PRECAUCION</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <ellipse cx="32" cy="20" rx="12" ry="16" fill="#22c55e" opacity="0.3"/>
+                        <ellipse cx="32" cy="20" rx="8" ry="10" fill="#22c55e"/>
+                        <rect x="30" y="30" width="4" height="20" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">LED Verde</div>
+                    <div class="component-desc">Pin 8 - PASA</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="26" width="48" height="12" rx="2" fill="#d4a574"/>
+                        <rect x="4" y="28" width="8" height="8" fill="#94a3b8"/>
+                        <rect x="52" y="28" width="8" height="8" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">3x Resistencia 220ohm</div>
+                    <div class="component-desc">Una por cada LED</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <line x1="16" y1="20" x2="16" y2="44" stroke="#ef4444" stroke-width="3"/>
+                        <line x1="24" y1="20" x2="24" y2="44" stroke="#22c55e" stroke-width="3"/>
+                        <line x1="32" y1="20" x2="32" y2="44" stroke="#3b82f6" stroke-width="3"/>
+                        <line x1="40" y1="20" x2="40" y2="44" stroke="#eab308" stroke-width="3"/>
+                        <line x1="48" y1="20" x2="48" y2="44" stroke="#94a3b8" stroke-width="3"/>
+                    </svg>
+                    <div class="component-name">Cables</div>
+                    <div class="component-desc">Minimo 8 cables</div>
+                </div>
+            </div>
+
+            <!-- Circuit Diagram -->
+            <div class="circuit-diagram">
+                <h4>Diagrama de conexion</h4>
+                <svg class="circuit-svg" viewBox="0 0 600 350" fill="none">
+                    <!-- Arduino Board -->
+                    <rect x="30" y="80" width="180" height="180" rx="8" fill="#0d9488" stroke="#14b8a6" stroke-width="2"/>
+                    <text x="120" y="175" text-anchor="middle" fill="white" font-size="14" font-weight="bold">ARDUINO UNO</text>
+
+                    <!-- Pin labels -->
+                    <rect x="200" y="100" width="30" height="15" fill="#1e1e1e" stroke="#333" stroke-width="1"/>
+                    <text x="215" y="112" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="bold">10</text>
+
+                    <rect x="200" y="140" width="30" height="15" fill="#1e1e1e" stroke="#333" stroke-width="1"/>
+                    <text x="215" y="152" text-anchor="middle" fill="#eab308" font-size="10" font-weight="bold">9</text>
+
+                    <rect x="200" y="180" width="30" height="15" fill="#1e1e1e" stroke="#333" stroke-width="1"/>
+                    <text x="215" y="192" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="bold">8</text>
+
+                    <rect x="200" y="230" width="30" height="15" fill="#1e1e1e" stroke="#333" stroke-width="1"/>
+                    <text x="215" y="242" text-anchor="middle" fill="#64748b" font-size="8">GND</text>
+
+                    <!-- Wires from pins -->
+                    <path d="M230 107 L280 107" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M230 147 L280 147" stroke="#eab308" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M230 187 L280 187" stroke="#22c55e" stroke-width="3" stroke-linecap="round"/>
+
+                    <!-- Resistors -->
+                    <rect x="280" y="97" width="50" height="20" rx="3" fill="#d4a574" stroke="#a37d55" stroke-width="1"/>
+                    <text x="305" y="111" text-anchor="middle" fill="#1e1e1e" font-size="7">220ohm</text>
+
+                    <rect x="280" y="137" width="50" height="20" rx="3" fill="#d4a574" stroke="#a37d55" stroke-width="1"/>
+                    <text x="305" y="151" text-anchor="middle" fill="#1e1e1e" font-size="7">220ohm</text>
+
+                    <rect x="280" y="177" width="50" height="20" rx="3" fill="#d4a574" stroke="#a37d55" stroke-width="1"/>
+                    <text x="305" y="191" text-anchor="middle" fill="#1e1e1e" font-size="7">220ohm</text>
+
+                    <!-- Wires from resistors to LEDs -->
+                    <path d="M330 107 L380 107" stroke="#94a3b8" stroke-width="2"/>
+                    <path d="M330 147 L380 147" stroke="#94a3b8" stroke-width="2"/>
+                    <path d="M330 187 L380 187" stroke="#94a3b8" stroke-width="2"/>
+
+                    <!-- Traffic Light Housing -->
+                    <rect x="370" y="70" width="80" height="150" rx="10" fill="#1a1a1a" stroke="#333" stroke-width="2"/>
+                    <text x="410" y="60" text-anchor="middle" fill="#64748b" font-size="10">SEMAFORO</text>
+
+                    <!-- LEDs in traffic light -->
+                    <circle cx="410" cy="107" r="20" fill="#ef4444" opacity="0.8"/>
+                    <text x="410" y="112" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">R</text>
+
+                    <circle cx="410" cy="147" r="20" fill="#eab308" opacity="0.8"/>
+                    <text x="410" y="152" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">A</text>
+
+                    <circle cx="410" cy="187" r="20" fill="#22c55e" opacity="0.8"/>
+                    <text x="410" y="192" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">V</text>
+
+                    <!-- LED cathodes to GND -->
+                    <path d="M430 107 L480 107 L480 237" stroke="#64748b" stroke-width="2"/>
+                    <path d="M430 147 L490 147 L490 237" stroke="#64748b" stroke-width="2"/>
+                    <path d="M430 187 L500 187 L500 237" stroke="#64748b" stroke-width="2"/>
+
+                    <!-- GND bus -->
+                    <path d="M230 237 L500 237" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+                    <text x="540" y="240" fill="#64748b" font-size="10">GND</text>
+
+                    <!-- Legend -->
+                    <text x="30" y="300" fill="#ef4444" font-size="11">Rojo: Pin 10</text>
+                    <text x="140" y="300" fill="#eab308" font-size="11">Amarillo: Pin 9</text>
+                    <text x="270" y="300" fill="#22c55e" font-size="11">Verde: Pin 8</text>
+                    <text x="400" y="300" fill="#64748b" font-size="11">Todos a GND</text>
+                </svg>
+            </div>
+
+            <!-- Component Explanations -->
+            <div class="explanation-card">
+                <h4>
+                    <span>3</span>
+                    Por que usamos los pines 8, 9, 10?
+                </h4>
+                <p>
+                    Arduino tiene pines del 0 al 13 para senales digitales. Los pines <span class="highlight">0 y 1</span>
+                    estan reservados para comunicacion serial (hablar con el ordenador), asi que es mejor no usarlos.
+                    Elegimos <span class="highlight">8, 9, 10</span> porque estan juntos y son faciles de recordar:
+                    8=Verde (pasa), 9=Amarillo (atencion), 10=Rojo (alto). Ademas, 9 y 10 son pines PWM (marcados con ~)
+                    por si mas adelante queremos hacer efectos de intensidad.
+                </p>
+            </div>
+
+            <div class="explanation-card">
+                <h4>
+                    <span>3</span>
+                    Por que 3 resistencias?
+                </h4>
+                <p>
+                    Cada LED necesita su propia resistencia de <span class="highlight">220ohm</span>.
+                    Si compartiesen una sola resistencia, cuando encendieras un LED los otros recibirian
+                    menos corriente y brillarian menos. Ademas, si se quema un LED, afectaria a los otros.
+                    Con resistencias individuales, cada LED es independiente.
+                </p>
+            </div>
+
+            <!-- LEGO Ideas -->
+            <div class="lego-section">
+                <h4>Ideas para construir con LEGO</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    El nino construye la estructura mientras tu preparas el circuito:
+                </p>
+                <div class="lego-ideas">
+                    <div class="lego-idea">
+                        <span>Poste</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Torre vertical con hueco para LEDs</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Cruce</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Calles con pasos de peatones</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Ciudad</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Mini ciudad con coches esperando</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Base</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Plataforma para el Arduino</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section class="section" id="codigo">
+            <div class="section-header">
+                <div class="section-number">03</div>
+                <h2 class="section-title">El codigo explicado</h2>
+                <p class="section-intro">
+                    Este programa introduce constantes para tiempos, multiples pines, y tu primera funcion propia.
+                </p>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-filename mono">p1_semaforo.ino</span>
+                    <button class="code-copy" onclick="copyCode()">Copiar codigo</button>
+                </div>
+                <pre><code class="language-cpp">// P1: Semaforo LEGO - EigenRobotics
+
+const int LED_ROJO = 10;
+const int LED_AMARILLO = 9;
+const int LED_VERDE = 8;
+
+// Tiempos en milisegundos
+const int TIEMPO_VERDE = 3000;     // 3 segundos
+const int TIEMPO_AMARILLO = 1000;  // 1 segundo
+const int TIEMPO_ROJO = 3000;      // 3 segundos
+
+void setup() {
+  pinMode(LED_ROJO, OUTPUT);
+  pinMode(LED_AMARILLO, OUTPUT);
+  pinMode(LED_VERDE, OUTPUT);
+
+  // Apagar todos al inicio
+  apagarTodos();
+}
+
+void loop() {
+  // Verde
+  digitalWrite(LED_VERDE, HIGH);
+  delay(TIEMPO_VERDE);
+  digitalWrite(LED_VERDE, LOW);
+
+  // Amarillo
+  digitalWrite(LED_AMARILLO, HIGH);
+  delay(TIEMPO_AMARILLO);
+  digitalWrite(LED_AMARILLO, LOW);
+
+  // Rojo
+  digitalWrite(LED_ROJO, HIGH);
+  delay(TIEMPO_ROJO);
+  digitalWrite(LED_ROJO, LOW);
+}
+
+void apagarTodos() {
+  digitalWrite(LED_ROJO, LOW);
+  digitalWrite(LED_AMARILLO, LOW);
+  digitalWrite(LED_VERDE, LOW);
+}</code></pre>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem; color: var(--accent);">Explicacion linea por linea:</h3>
+
+            <div class="code-explanation">
+                <div class="code-line">
+                    <div class="line-number">1</div>
+                    <div class="line-content">
+                        <h4><code>const int LED_ROJO = 10;</code></h4>
+                        <p>
+                            Definimos tres <strong>constantes</strong> para los pines. Usar nombres descriptivos como
+                            <code>LED_ROJO</code> hace el codigo mucho mas facil de leer que escribir "10" por todas partes.
+                            Si luego cambias el pin, solo modificas esta linea.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">2</div>
+                    <div class="line-content">
+                        <h4><code>const int TIEMPO_VERDE = 3000;</code></h4>
+                        <p>
+                            Tambien definimos los tiempos como constantes. <code>3000</code> milisegundos = 3 segundos.
+                            Si quieres cambiar la duracion del verde, solo cambias este numero.
+                            Es como tener "perillas de ajuste" para tu programa.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">3</div>
+                    <div class="line-content">
+                        <h4><code>pinMode(LED_ROJO, OUTPUT);</code> (x3)</h4>
+                        <p>
+                            Configuramos los tres pines como <strong>salidas</strong>. Igual que en P0,
+                            pero ahora lo hacemos tres veces. Cada LED necesita su propia configuracion.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">4</div>
+                    <div class="line-content">
+                        <h4><code>apagarTodos();</code></h4>
+                        <p>
+                            Llamamos a nuestra propia funcion. Esto asegura que al encender Arduino,
+                            todos los LEDs empiecen apagados. Es una buena practica: empezar desde un estado conocido.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">5</div>
+                    <div class="line-content">
+                        <h4>La secuencia en <code>loop()</code></h4>
+                        <p>
+                            El patron es siempre igual: <strong>encender - esperar - apagar</strong>.
+                            Primero verde (3s), luego amarillo (1s), luego rojo (3s).
+                            Cuando termina el rojo, el loop vuelve a empezar con el verde.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">6</div>
+                    <div class="line-content">
+                        <h4><code>void apagarTodos() { ... }</code></h4>
+                        <p>
+                            Tu primera <strong>funcion propia</strong>. Agrupa tres instrucciones en una sola palabra.
+                            Cuando escribes <code>apagarTodos();</code>, Arduino ejecuta las tres lineas de dentro.
+                            Esto hace el codigo mas limpio y evita repetir lo mismo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Concepts -->
+            <h3 style="margin: 3rem 0 1rem;">Conceptos clave:</h3>
+            <div class="concepts-grid">
+                <div class="concept-card">
+                    <h4>Constantes con const</h4>
+                    <p>
+                        <code>const int NOMBRE = valor;</code> crea un valor que no cambia.
+                        Es mejor que "numeros magicos" sueltos porque sabes que significa cada uno.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Multiples outputs</h4>
+                    <p>
+                        Puedes controlar tantos pines como quieras (Arduino UNO tiene 14 digitales).
+                        Cada <code>pinMode()</code> y <code>digitalWrite()</code> es independiente.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Funciones propias</h4>
+                    <p>
+                        <code>void nombreFuncion() { }</code> agrupa instrucciones.
+                        Puedes llamarla desde cualquier parte del codigo con <code>nombreFuncion();</code>
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Secuencias de estados</h4>
+                    <p>
+                        El semaforo es una <strong>maquina de estados</strong>: Verde - Amarillo - Rojo - Verde...
+                        Cada estado tiene una accion (LED) y una duracion (delay).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulator Section -->
+        <section class="section" id="simulador">
+            <div class="section-header">
+                <div class="section-number">04</div>
+                <h2 class="section-title">Simulador interactivo</h2>
+                <p class="section-intro">
+                    Prueba el semaforo sin hardware. Puedes ver los 3 LEDs cambiando de color.
+                </p>
+            </div>
+
+            <div class="simulator-container">
+                <div class="simulator-header">
+                    <h4>Wokwi Simulator</h4>
+                    <a href="https://wokwi.com/projects/new/arduino-uno" target="_blank">Abrir en Wokwi</a>
+                </div>
+                <iframe
+                    class="simulator-embed"
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    loading="lazy"
+                ></iframe>
+            </div>
+
+            <div class="explanation-card">
+                <h4>
+                    <span>Configurar el simulador</span>
+                </h4>
+                <p>
+                    1. Copia el codigo del proyecto.<br>
+                    2. En Wokwi, haz clic en el boton <span class="highlight">+</span> para anadir componentes.<br>
+                    3. Anade 3 LEDs (rojo, amarillo, verde) y 3 resistencias.<br>
+                    4. Conecta segun el diagrama: Pin 10-Rojo, Pin 9-Amarillo, Pin 8-Verde.<br>
+                    5. Dale a Play y observa la secuencia!
+                </p>
+            </div>
+        </section>
+
+        <!-- Steps Section -->
+        <section class="section" id="pasos">
+            <div class="section-header">
+                <div class="section-number">05</div>
+                <h2 class="section-title">Paso a paso</h2>
+                <p class="section-intro">
+                    Monta el semaforo en 8 pasos sencillos.
+                </p>
+            </div>
+
+            <div class="steps-timeline">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Prepara los LEDs</h4>
+                        <p>
+                            Identifica los 3 LEDs por su color. Recuerda: la pata larga es el positivo (+)
+                            y va hacia el pin de Arduino. La pata corta es el negativo (-) y va hacia GND.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Coloca las resistencias</h4>
+                        <p>
+                            Pon 3 resistencias de 220ohm en la breadboard. Cada una conectara un pin de Arduino
+                            con la pata larga de un LED.
+                        </p>
+                        <div class="step-tip">
+                            <strong>Tip:</strong> Las resistencias no tienen polaridad. Da igual que lado va donde.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Conecta el LED rojo</h4>
+                        <p>
+                            Pin 10 - resistencia - LED rojo (pata larga) - pata corta a linea GND.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Conecta el LED amarillo</h4>
+                        <p>
+                            Pin 9 - resistencia - LED amarillo (pata larga) - pata corta a linea GND.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Conecta el LED verde</h4>
+                        <p>
+                            Pin 8 - resistencia - LED verde (pata larga) - pata corta a linea GND.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h4>Conecta GND</h4>
+                        <p>
+                            Un cable desde cualquier pin GND de Arduino a la linea de tierra (azul/negra)
+                            de la breadboard. Todos los LEDs comparten este GND comun.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <h4>Sube el codigo</h4>
+                        <p>
+                            Conecta Arduino al ordenador, abre Arduino IDE, pega el codigo, selecciona
+                            placa y puerto, y pulsa el boton de subir (flecha).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">8</div>
+                    <div class="step-content">
+                        <h4>Observa el semaforo!</h4>
+                        <p>
+                            Deberia encenderse primero el verde (3s), luego amarillo (1s), luego rojo (3s),
+                            y repetir. Si no funciona, revisa las conexiones y la polaridad de los LEDs.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section" id="experimentos">
+            <div class="section-header">
+                <div class="section-number">06</div>
+                <h2 class="section-title">Experimentos</h2>
+                <p class="section-intro">
+                    Modifica el codigo para crear variaciones del semaforo.
+                </p>
+            </div>
+
+            <div class="experiments-grid">
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Facil</span>
+                    <h4>Cambia los tiempos</h4>
+                    <p>
+                        Modifica <code>TIEMPO_VERDE</code> a 5000 y <code>TIEMPO_ROJO</code> a 4000.
+                        Observa como cambia el ritmo del semaforo.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Facil</span>
+                    <h4>Semaforo rapido</h4>
+                    <p>
+                        Pon todos los tiempos a 500 (medio segundo).
+                        Un semaforo loco que cambia muy rapido!
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Medio</span>
+                    <h4>Modo noche</h4>
+                    <p>
+                        Crea un modo donde solo el amarillo parpadee:
+                        <code>digitalWrite(LED_AMARILLO, HIGH); delay(500); LOW; delay(500);</code>
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Medio</span>
+                    <h4>Amarillo parpadeante</h4>
+                    <p>
+                        Antes de cambiar a rojo, haz que el amarillo parpadee 3 veces.
+                        Usa un bucle <code>for</code>.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Desafio</span>
+                    <h4>Segundo semaforo</h4>
+                    <p>
+                        Anade 3 LEDs mas para un cruce. Cuando uno esta en verde,
+                        el otro debe estar en rojo. Simula una interseccion real!
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Desafio</span>
+                    <h4>Semaforo peatonal</h4>
+                    <p>
+                        Anade 2 LEDs (rojo/verde) para peatones.
+                        Cuando los coches tienen rojo, los peatones tienen verde.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="project-nav">
+            <a href="p0-blink.html" class="nav-button">
+                <span>&lt;-</span>
+                <div class="nav-button-text">
+                    <span class="nav-button-label">Proyecto anterior</span>
+                    <span class="nav-button-title">P0: Blink</span>
+                </div>
+            </a>
+            <a href="p2-nave.html" class="nav-button">
+                <div class="nav-button-text" style="text-align: right;">
+                    <span class="nav-button-label">Siguiente proyecto</span>
+                    <span class="nav-button-title">P2: Nave con Luces</span>
+                </div>
+                <span>-></span>
+            </a>
+        </nav>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-logo orbitron">EIGENROBOTICS</div>
+        <p class="footer-text">Piano piano. Cada proyecto construye sobre el anterior.</p>
+    </footer>
+
+    <script>
+        // Syntax highlighting
+        hljs.highlightAll();
+
+        // Traffic light animation
+        const states = ['green', 'yellow', 'red'];
+        const times = [3000, 1000, 3000];
+        let currentState = 0;
+
+        function updateTrafficLight() {
+            document.querySelectorAll('.traffic-led').forEach(led => led.classList.remove('active'));
+
+            if (currentState === 0) {
+                document.getElementById('led-green').classList.add('active');
+            } else if (currentState === 1) {
+                document.getElementById('led-yellow').classList.add('active');
+            } else {
+                document.getElementById('led-red').classList.add('active');
+            }
+
+            setTimeout(() => {
+                currentState = (currentState + 1) % 3;
+                updateTrafficLight();
+            }, times[currentState]);
+        }
+
+        updateTrafficLight();
+
+        // Copy code function
+        function copyCode() {
+            const code = document.querySelector('pre code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.code-copy');
+                btn.textContent = 'Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar codigo';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>
