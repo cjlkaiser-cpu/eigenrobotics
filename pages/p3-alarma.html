@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P3: Alarma de Fortaleza - EigenRobotics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #1a1a24;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #ef4444;
+            --accent-dim: rgba(239, 68, 68, 0.1);
+            --accent-secondary: #f97316;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(239, 68, 68, 0.15) 0%, transparent 50%);
+            position: relative;
+        }
+
+        .hero-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Sections */
+        .section {
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .section-intro {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        /* Result Section */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .result-visual {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+        }
+
+        /* Alarm Demo */
+        .alarm-demo {
+            position: relative;
+            width: 250px;
+            height: 200px;
+        }
+
+        .fortress {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 100px;
+        }
+
+        .fortress-base {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, #475569 0%, #334155 100%);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .fortress-tower {
+            position: absolute;
+            bottom: 40px;
+            width: 30px;
+            height: 50px;
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        }
+
+        .fortress-tower.left {
+            left: 5px;
+        }
+
+        .fortress-tower.right {
+            right: 5px;
+        }
+
+        .fortress-tower::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-bottom: 15px solid #64748b;
+        }
+
+        .sensor-hc {
+            position: absolute;
+            bottom: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 25px;
+            background: #1e40af;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding-top: 5px;
+        }
+
+        .sensor-eye {
+            width: 14px;
+            height: 14px;
+            background: #94a3b8;
+            border-radius: 50%;
+            border: 2px solid #64748b;
+        }
+
+        .sound-wave {
+            position: absolute;
+            bottom: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            opacity: 0;
+            animation: wave 2s infinite;
+        }
+
+        .sound-wave:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+
+        .sound-wave:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: translateX(-50%) scale(0.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateX(-50%) scale(2);
+                opacity: 0;
+            }
+        }
+
+        .intruder {
+            position: absolute;
+            bottom: 20px;
+            right: -30px;
+            width: 40px;
+            height: 60px;
+            transition: right 0.5s;
+        }
+
+        .intruder-body {
+            width: 30px;
+            height: 40px;
+            background: #1e293b;
+            border-radius: 8px 8px 4px 4px;
+            margin: 0 auto;
+        }
+
+        .intruder-head {
+            width: 20px;
+            height: 20px;
+            background: #fcd34d;
+            border-radius: 50%;
+            margin: 0 auto 2px;
+        }
+
+        .alarm-light {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0;
+            box-shadow: 0 0 30px var(--accent), 0 0 60px var(--accent);
+        }
+
+        .alarm-light.active {
+            animation: alarm-flash 0.3s infinite alternate;
+        }
+
+        @keyframes alarm-flash {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .demo-controls {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .demo-btn {
+            padding: 8px 20px;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .demo-btn:hover {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        .demo-btn.active {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        .distance-display {
+            margin-top: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .result-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-text h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .result-list li:last-child {
+            border-bottom: none;
+        }
+
+        .result-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-dim);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        /* Components Grid */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .component-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .component-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .component-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+        }
+
+        .component-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .component-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* How Ultrasonic Works */
+        .ultrasonic-diagram {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .ultrasonic-diagram h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .ultrasonic-svg {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Circuit Diagram */
+        .circuit-diagram {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .circuit-diagram h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .circuit-svg {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Explanation Card */
+        .explanation-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        .explanation-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .explanation-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .explanation-card .highlight {
+            background: var(--accent-dim);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        /* Formula Box */
+        .formula-box {
+            background: var(--bg-code);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .formula-box .formula {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .formula-box .explanation {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Code Section */
+        .code-container {
+            position: relative;
+            margin: 2rem 0;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e1e28;
+            padding: 0.75rem 1rem;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+
+        .code-filename {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .code-copy {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .code-copy:hover {
+            transform: scale(1.05);
+        }
+
+        .code-copy.copied {
+            background: #10b981;
+        }
+
+        pre {
+            margin: 0;
+            border-radius: 0 0 12px 12px;
+            border: 1px solid var(--border);
+            border-top: none;
+        }
+
+        pre code {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        /* Code Explanation */
+        .code-explanation {
+            margin-top: 2rem;
+        }
+
+        .code-line {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .code-line:hover {
+            border-color: var(--accent);
+        }
+
+        .line-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .line-content h4 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .line-content h4 code {
+            background: var(--bg-code);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .line-content p {
+            color: var(--text-secondary);
+        }
+
+        /* Concepts Grid */
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .concept-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .concept-card h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concept-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .concept-card code {
+            background: var(--bg-code);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Simulator */
+        .simulator-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .simulator-header {
+            padding: 1rem 1.5rem;
+            background: rgba(239, 68, 68, 0.1);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .simulator-header h4 {
+            color: var(--accent);
+        }
+
+        .simulator-header a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .simulator-header a:hover {
+            color: var(--accent);
+        }
+
+        .simulator-embed {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Steps Timeline */
+        .steps-timeline {
+            position: relative;
+            margin: 2rem 0;
+            padding-left: 3rem;
+        }
+
+        .steps-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .step {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .step:last-child {
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            position: absolute;
+            left: -3rem;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .step-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .step-content h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+        }
+
+        .step-tip {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--accent-dim);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .step-tip strong {
+            color: var(--accent);
+        }
+
+        /* Experiments Grid */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--accent);
+        }
+
+        .experiment-difficulty {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-card h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* LEGO Section */
+        .lego-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .lego-section h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lego-ideas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .lego-idea {
+            background: rgba(239, 68, 68, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .lego-idea span {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Navigation */
+        .project-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 3rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .nav-button:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .nav-button-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-button-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-button-title {
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-text {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-meta {
+                gap: 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .code-line {
+                grid-template-columns: 1fr;
+            }
+
+            .line-number {
+                width: auto;
+                padding: 0.5rem 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .project-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="../showcase.html" class="nav-logo orbitron">EIGENROBOTICS</a>
+        <div class="nav-links">
+            <a href="#resultado">Resultado</a>
+            <a href="#hardware">Hardware</a>
+            <a href="#codigo">Codigo</a>
+            <a href="#simulador">Simulador</a>
+            <a href="#pasos">Paso a paso</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <span class="hero-level">Nivel 2 - Inputs + Outputs</span>
+        <h1 class="hero-title orbitron">P3: ALARMA</h1>
+        <p class="hero-subtitle">
+            Sistema de seguridad con sensor ultrasonico. Construye una fortaleza LEGO y protegela de intrusos.
+            Si alguien se acerca demasiado... suena la alarma!
+        </p>
+        <div class="hero-meta">
+            <div class="meta-item">
+                <div class="meta-value orbitron">45</div>
+                <div class="meta-label">Minutos</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-value orbitron">5</div>
+                <div class="meta-label">Componentes</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-value orbitron">93</div>
+                <div class="meta-label">Lineas de codigo</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Resultado Section -->
+        <section class="section" id="resultado">
+            <div class="section-header">
+                <div class="section-number">01</div>
+                <h2 class="section-title">Que vamos a conseguir?</h2>
+                <p class="section-intro">
+                    Un sistema de alarma que detecta cuando algo se acerca a menos de 20cm.
+                    El sensor envia ondas de sonido y mide cuanto tardan en volver.
+                </p>
+            </div>
+
+            <div class="result-grid">
+                <div class="result-visual">
+                    <div class="alarm-demo">
+                        <div class="alarm-light" id="alarm-light"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="sound-wave"></div>
+                        <div class="fortress">
+                            <div class="fortress-tower left"></div>
+                            <div class="fortress-tower right"></div>
+                            <div class="fortress-base"></div>
+                            <div class="sensor-hc">
+                                <div class="sensor-eye"></div>
+                                <div class="sensor-eye"></div>
+                            </div>
+                        </div>
+                        <div class="intruder" id="intruder">
+                            <div class="intruder-head"></div>
+                            <div class="intruder-body"></div>
+                        </div>
+                    </div>
+                    <div class="distance-display">Distancia: <span id="distance-display">45</span> cm</div>
+                    <div class="demo-controls">
+                        <button class="demo-btn" id="btn-far">Lejos (45cm)</button>
+                        <button class="demo-btn" id="btn-near">Cerca (15cm)</button>
+                    </div>
+                </div>
+                <div class="result-text">
+                    <h3>Lo que aprenderas:</h3>
+                    <ul class="result-list">
+                        <li>
+                            <span class="result-icon">1</span>
+                            <span>Como funciona un sensor ultrasonico (HC-SR04)</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">2</span>
+                            <span>Medir tiempo de pulsos con <code>pulseIn()</code></span>
+                        </li>
+                        <li>
+                            <span class="result-icon">3</span>
+                            <span>Usar condicionales <code>if/else</code> para tomar decisiones</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">4</span>
+                            <span>Crear funciones que devuelven valores</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hardware Section -->
+        <section class="section" id="hardware">
+            <div class="section-header">
+                <div class="section-number">02</div>
+                <h2 class="section-title">Hardware necesario</h2>
+                <p class="section-intro">
+                    El HC-SR04 es un sensor barato pero muy util. Mide distancias de 2cm a 400cm usando ultrasonido.
+                </p>
+            </div>
+
+            <div class="components-grid">
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="16" width="48" height="32" rx="2" fill="#0d9488" stroke="#14b8a6" stroke-width="2"/>
+                        <rect x="12" y="20" width="8" height="8" fill="#1e1e1e"/>
+                        <circle cx="52" cy="24" r="2" fill="#ef4444"/>
+                    </svg>
+                    <div class="component-name">Arduino UNO</div>
+                    <div class="component-desc">El cerebro</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="20" width="48" height="24" rx="2" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+                        <circle cx="22" cy="32" r="8" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                        <circle cx="42" cy="32" r="8" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                        <rect x="16" y="44" width="6" height="8" fill="#94a3b8"/>
+                        <rect x="26" y="44" width="6" height="8" fill="#94a3b8"/>
+                        <rect x="36" y="44" width="6" height="8" fill="#94a3b8"/>
+                        <rect x="46" y="44" width="6" height="8" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">HC-SR04</div>
+                    <div class="component-desc">Sensor ultrasonico</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <circle cx="32" cy="32" r="18" fill="#1e1e1e" stroke="#333" stroke-width="2"/>
+                        <circle cx="32" cy="32" r="12" fill="#333"/>
+                        <circle cx="32" cy="32" r="4" fill="#64748b"/>
+                    </svg>
+                    <div class="component-name">Buzzer</div>
+                    <div class="component-desc">Sonido de alarma</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <ellipse cx="32" cy="20" rx="12" ry="16" fill="#ef4444" opacity="0.3"/>
+                        <ellipse cx="32" cy="20" rx="8" ry="10" fill="#ef4444"/>
+                        <rect x="30" y="30" width="4" height="20" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">LED Rojo</div>
+                    <div class="component-desc">Indicador visual</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="26" width="48" height="12" rx="2" fill="#d4a574"/>
+                        <rect x="4" y="28" width="8" height="8" fill="#94a3b8"/>
+                        <rect x="52" y="28" width="8" height="8" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">Resistencia 220ohm</div>
+                    <div class="component-desc">Para el LED</div>
+                </div>
+            </div>
+
+            <!-- How Ultrasonic Works -->
+            <div class="ultrasonic-diagram">
+                <h4>Como funciona el sensor ultrasonico</h4>
+                <svg class="ultrasonic-svg" viewBox="0 0 600 200" fill="none">
+                    <!-- Sensor -->
+                    <rect x="50" y="70" width="80" height="60" rx="4" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+                    <circle cx="75" cy="100" r="15" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                    <circle cx="105" cy="100" r="15" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                    <text x="90" y="150" text-anchor="middle" fill="#64748b" font-size="11">HC-SR04</text>
+
+                    <!-- Labels -->
+                    <text x="75" y="85" text-anchor="middle" fill="#333" font-size="8" font-weight="bold">TX</text>
+                    <text x="105" y="85" text-anchor="middle" fill="#333" font-size="8" font-weight="bold">RX</text>
+
+                    <!-- Outgoing wave -->
+                    <path d="M130 90 Q200 90 270 60" stroke="#ef4444" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                    <path d="M130 100 Q200 100 270 100" stroke="#ef4444" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                    <path d="M130 110 Q200 110 270 140" stroke="#ef4444" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+
+                    <!-- Object -->
+                    <rect x="280" y="50" width="30" height="100" rx="4" fill="#fcd34d" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="295" y="105" text-anchor="middle" fill="#92400e" font-size="10">Objeto</text>
+
+                    <!-- Returning wave -->
+                    <path d="M310 60 Q380 60 450 90" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                    <path d="M310 100 Q380 100 450 100" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                    <path d="M310 140 Q380 140 450 110" stroke="#22c55e" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+
+                    <!-- Sensor receiving -->
+                    <rect x="470" y="70" width="80" height="60" rx="4" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+                    <circle cx="495" cy="100" r="15" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                    <circle cx="525" cy="100" r="15" fill="#22c55e" stroke="#16a34a" stroke-width="2"/>
+
+                    <!-- Timeline -->
+                    <line x1="90" y1="175" x2="510" y2="175" stroke="#64748b" stroke-width="2"/>
+                    <text x="90" y="192" text-anchor="middle" fill="#ef4444" font-size="10">Envia pulso</text>
+                    <text x="300" y="192" text-anchor="middle" fill="#64748b" font-size="10">Tiempo viaje</text>
+                    <text x="510" y="192" text-anchor="middle" fill="#22c55e" font-size="10">Recibe eco</text>
+                </svg>
+            </div>
+
+            <div class="formula-box">
+                <div class="formula">Distancia = (Tiempo x Velocidad) / 2</div>
+                <div class="explanation">Dividimos entre 2 porque el sonido va y vuelve</div>
+            </div>
+
+            <!-- Circuit Diagram -->
+            <div class="circuit-diagram">
+                <h4>Diagrama de conexion</h4>
+                <svg class="circuit-svg" viewBox="0 0 700 350" fill="none">
+                    <!-- Arduino Board -->
+                    <rect x="30" y="80" width="180" height="200" rx="8" fill="#0d9488" stroke="#14b8a6" stroke-width="2"/>
+                    <text x="120" y="185" text-anchor="middle" fill="white" font-size="14" font-weight="bold">ARDUINO UNO</text>
+
+                    <!-- Pin labels -->
+                    <rect x="200" y="100" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="112" text-anchor="middle" fill="#ef4444" font-size="8">5V</text>
+
+                    <rect x="200" y="130" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="142" text-anchor="middle" fill="#f97316" font-size="9" font-weight="bold">7</text>
+
+                    <rect x="200" y="160" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="172" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="bold">6</text>
+
+                    <rect x="200" y="190" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="202" text-anchor="middle" fill="#8b5cf6" font-size="9" font-weight="bold">8</text>
+
+                    <rect x="200" y="220" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="232" text-anchor="middle" fill="#06b6d4" font-size="9" font-weight="bold">9</text>
+
+                    <rect x="200" y="250" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="262" text-anchor="middle" fill="#64748b" font-size="8">GND</text>
+
+                    <!-- HC-SR04 Sensor -->
+                    <rect x="350" y="90" width="120" height="70" rx="4" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+                    <circle cx="385" cy="125" r="20" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                    <circle cx="435" cy="125" r="20" fill="#94a3b8" stroke="#64748b" stroke-width="2"/>
+                    <text x="410" y="80" text-anchor="middle" fill="#64748b" font-size="11">HC-SR04</text>
+
+                    <!-- HC-SR04 pins -->
+                    <rect x="355" y="160" width="25" height="20" fill="#1e1e1e" stroke="#333"/>
+                    <text x="367" y="174" text-anchor="middle" fill="#ef4444" font-size="7">VCC</text>
+
+                    <rect x="382" y="160" width="25" height="20" fill="#1e1e1e" stroke="#333"/>
+                    <text x="394" y="174" text-anchor="middle" fill="#f97316" font-size="7">TRIG</text>
+
+                    <rect x="409" y="160" width="25" height="20" fill="#1e1e1e" stroke="#333"/>
+                    <text x="421" y="174" text-anchor="middle" fill="#22c55e" font-size="7">ECHO</text>
+
+                    <rect x="436" y="160" width="25" height="20" fill="#1e1e1e" stroke="#333"/>
+                    <text x="448" y="174" text-anchor="middle" fill="#64748b" font-size="7">GND</text>
+
+                    <!-- Wires to HC-SR04 -->
+                    <path d="M230 107 L367 107 L367 160" stroke="#ef4444" stroke-width="2"/>
+                    <path d="M230 137 L300 137 L300 190 L394 190 L394 180" stroke="#f97316" stroke-width="2"/>
+                    <path d="M230 167 L280 167 L280 200 L421 200 L421 180" stroke="#22c55e" stroke-width="2"/>
+                    <path d="M448 180 L448 257" stroke="#333" stroke-width="2"/>
+
+                    <!-- Buzzer -->
+                    <circle cx="550" cy="200" r="30" fill="#1e1e1e" stroke="#333" stroke-width="2"/>
+                    <circle cx="550" cy="200" r="18" fill="#333"/>
+                    <circle cx="550" cy="200" r="6" fill="#64748b"/>
+                    <text x="550" y="245" text-anchor="middle" fill="#64748b" font-size="10">BUZZER</text>
+                    <text x="520" y="205" fill="#8b5cf6" font-size="8">+</text>
+
+                    <!-- Wire to buzzer -->
+                    <path d="M230 197 L260 197 L260 200 L520 200" stroke="#8b5cf6" stroke-width="2"/>
+                    <path d="M580 200 L580 257 L448 257" stroke="#333" stroke-width="2"/>
+
+                    <!-- LED -->
+                    <ellipse cx="630" cy="130" rx="20" ry="30" fill="#ef4444" opacity="0.3"/>
+                    <ellipse cx="630" cy="130" rx="12" ry="20" fill="#ef4444"/>
+                    <text x="630" y="175" text-anchor="middle" fill="#64748b" font-size="10">LED</text>
+
+                    <!-- Resistor for LED -->
+                    <rect x="280" y="217" width="40" height="16" rx="2" fill="#d4a574" stroke="#a37d55"/>
+                    <text x="300" y="229" text-anchor="middle" fill="#1e1e1e" font-size="7">220</text>
+
+                    <!-- Wire to LED -->
+                    <path d="M230 227 L280 225" stroke="#06b6d4" stroke-width="2"/>
+                    <path d="M320 225 L618 130" stroke="#94a3b8" stroke-width="2"/>
+                    <path d="M642 130 L660 130 L660 257 L580 257" stroke="#333" stroke-width="2"/>
+
+                    <!-- GND bus -->
+                    <path d="M230 257 L660 257" stroke="#333" stroke-width="4"/>
+                    <text x="680" y="260" fill="#64748b" font-size="10">GND</text>
+
+                    <!-- Legend -->
+                    <text x="30" y="310" fill="#f97316" font-size="10">Pin 7: TRIG (disparo)</text>
+                    <text x="180" y="310" fill="#22c55e" font-size="10">Pin 6: ECHO (eco)</text>
+                    <text x="330" y="310" fill="#8b5cf6" font-size="10">Pin 8: Buzzer</text>
+                    <text x="470" y="310" fill="#06b6d4" font-size="10">Pin 9: LED</text>
+                </svg>
+            </div>
+
+            <!-- Component Explanations -->
+            <div class="explanation-card">
+                <h4>
+                    <span>TRIG y ECHO - Los dos pines del sensor</span>
+                </h4>
+                <p>
+                    <span class="highlight">TRIG</span> (Trigger/Disparo): Cuando enviamos un pulso de 10 microsegundos,
+                    el sensor emite 8 pulsos ultrasonicos a 40kHz.<br><br>
+                    <span class="highlight">ECHO</span>: Este pin se pone en HIGH mientras el sonido viaja.
+                    Midiendo cuanto tiempo esta en HIGH, calculamos la distancia.
+                </p>
+            </div>
+
+            <div class="explanation-card">
+                <h4>
+                    <span>La formula de la distancia</span>
+                </h4>
+                <p>
+                    El sonido viaja a <span class="highlight">343 m/s</span> (a 20C).
+                    Si el eco tarda 1000 microsegundos en volver, el sonido recorrio:
+                    <code>1000us x 0.0343 cm/us = 34.3 cm</code> (ida y vuelta).
+                    La distancia real es la mitad: <span class="highlight">17.15 cm</span>.<br><br>
+                    Simplificado: <code>distancia_cm = tiempo_us / 58</code>
+                </p>
+            </div>
+
+            <!-- LEGO Ideas -->
+            <div class="lego-section">
+                <h4>Ideas para construir con LEGO</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    El nino construye la fortaleza mientras tu preparas la alarma:
+                </p>
+                <div class="lego-ideas">
+                    <div class="lego-idea">
+                        <span>Castillo</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Con torres y puente levadizo</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Bunker</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Base militar secreta</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Banco</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Con caja fuerte protegida</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Museo</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Protege las joyas!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section class="section" id="codigo">
+            <div class="section-header">
+                <div class="section-number">03</div>
+                <h2 class="section-title">El codigo explicado</h2>
+                <p class="section-intro">
+                    Este programa introduce funciones que devuelven valores y condicionales para tomar decisiones.
+                </p>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-filename mono">p3_alarma.ino</span>
+                    <button class="code-copy" onclick="copyCode()">Copiar codigo</button>
+                </div>
+                <pre><code class="language-cpp">// P3: Alarma de Fortaleza - EigenRobotics
+
+const int TRIG = 7;
+const int ECHO = 6;
+const int BUZZER = 8;
+const int LED = 9;
+
+const int DISTANCIA_ALARMA = 20;  // cm
+
+void setup() {
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  pinMode(BUZZER, OUTPUT);
+  pinMode(LED, OUTPUT);
+
+  Serial.begin(9600);
+  Serial.println("Alarma de Fortaleza activada!");
+}
+
+void loop() {
+  int distancia = medirDistancia();
+
+  Serial.print("Distancia: ");
+  Serial.print(distancia);
+  Serial.println(" cm");
+
+  if (distancia > 0 && distancia < DISTANCIA_ALARMA) {
+    activarAlarma();
+  } else {
+    desactivarAlarma();
+  }
+
+  delay(100);
+}
+
+int medirDistancia() {
+  // Enviar pulso de 10 microsegundos
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+
+  // Medir tiempo del eco
+  long duracion = pulseIn(ECHO, HIGH, 30000);
+
+  // Calcular distancia
+  int distancia = duracion / 58;
+
+  return distancia;
+}
+
+void activarAlarma() {
+  digitalWrite(LED, HIGH);
+  digitalWrite(BUZZER, HIGH);
+}
+
+void desactivarAlarma() {
+  digitalWrite(LED, LOW);
+  digitalWrite(BUZZER, LOW);
+}</code></pre>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem; color: var(--accent);">Explicacion linea por linea:</h3>
+
+            <div class="code-explanation">
+                <div class="code-line">
+                    <div class="line-number">1</div>
+                    <div class="line-content">
+                        <h4><code>pinMode(ECHO, INPUT);</code></h4>
+                        <p>
+                            Primera vez que usamos un pin como <strong>INPUT</strong> (entrada).
+                            El pin ECHO <em>recibe</em> informacion del sensor, no la envia.
+                            TRIG es OUTPUT porque nosotros enviamos el pulso de disparo.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">2</div>
+                    <div class="line-content">
+                        <h4><code>int distancia = medirDistancia();</code></h4>
+                        <p>
+                            Llamamos a nuestra funcion <code>medirDistancia()</code> y guardamos
+                            el resultado en la variable <code>distancia</code>. La funcion hace todo
+                            el trabajo de medir y calcular, y nos devuelve un numero.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">3</div>
+                    <div class="line-content">
+                        <h4><code>if (distancia > 0 && distancia < DISTANCIA_ALARMA)</code></h4>
+                        <p>
+                            <strong>Condicional:</strong> Si la distancia es mayor que 0 (lectura valida)
+                            <strong>Y</strong> (&&) menor que 20cm, hay un intruso. El <code>&&</code> significa
+                            que ambas condiciones deben cumplirse.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">4</div>
+                    <div class="line-content">
+                        <h4><code>delayMicroseconds(10);</code></h4>
+                        <p>
+                            Pausa de 10 <strong>microsegundos</strong> (no milisegundos).
+                            1 microsegundo = 0.001 milisegundos. Es una pausa muy corta, necesaria
+                            para que el sensor genere los pulsos ultrasonicos.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">5</div>
+                    <div class="line-content">
+                        <h4><code>long duracion = pulseIn(ECHO, HIGH, 30000);</code></h4>
+                        <p>
+                            <code>pulseIn()</code> mide cuanto tiempo esta un pin en HIGH (o LOW).
+                            Devuelve la duracion en microsegundos. El <code>30000</code> es un timeout:
+                            si no hay eco en 30ms, devuelve 0. Usamos <code>long</code> porque puede ser un numero grande.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">6</div>
+                    <div class="line-content">
+                        <h4><code>int medirDistancia()</code> vs <code>void activarAlarma()</code></h4>
+                        <p>
+                            <code>int</code> significa que la funcion <strong>devuelve un numero</strong>.
+                            <code>void</code> significa que no devuelve nada, solo hace algo.
+                            Por eso <code>medirDistancia()</code> tiene <code>return distancia;</code> al final.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Concepts -->
+            <h3 style="margin: 3rem 0 1rem;">Conceptos clave:</h3>
+            <div class="concepts-grid">
+                <div class="concept-card">
+                    <h4>pulseIn(pin, estado, timeout)</h4>
+                    <p>
+                        Mide la duracion de un pulso en microsegundos.
+                        Espera a que el pin cambie al estado indicado, mide, y espera a que vuelva.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Condicionales if/else</h4>
+                    <p>
+                        <code>if (condicion) { A } else { B }</code><br>
+                        Si la condicion es verdadera, ejecuta A. Si no, ejecuta B.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Operador && (AND)</h4>
+                    <p>
+                        <code>A && B</code> es verdadero solo si A y B son verdaderos.
+                        Tambien existe <code>||</code> (OR): verdadero si A o B lo son.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Funciones con return</h4>
+                    <p>
+                        <code>int miFuncion() { return 42; }</code><br>
+                        Puedes usar el resultado: <code>int x = miFuncion();</code>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulator Section -->
+        <section class="section" id="simulador">
+            <div class="section-header">
+                <div class="section-number">04</div>
+                <h2 class="section-title">Simulador interactivo</h2>
+                <p class="section-intro">
+                    Prueba el sensor ultrasonico en Wokwi. Puedes mover objetos para simular intrusos.
+                </p>
+            </div>
+
+            <div class="simulator-container">
+                <div class="simulator-header">
+                    <h4>Wokwi Simulator</h4>
+                    <a href="https://wokwi.com/projects/new/arduino-uno" target="_blank">Abrir en Wokwi</a>
+                </div>
+                <iframe
+                    class="simulator-embed"
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    loading="lazy"
+                ></iframe>
+            </div>
+
+            <div class="explanation-card">
+                <h4>
+                    <span>Configurar el simulador</span>
+                </h4>
+                <p>
+                    1. Copia el codigo del proyecto.<br>
+                    2. Anade un <span class="highlight">HC-SR04</span> desde el menu de componentes.<br>
+                    3. Conecta: VCC-5V, TRIG-Pin7, ECHO-Pin6, GND-GND.<br>
+                    4. Anade un buzzer (pin 8) y LED (pin 9 con resistencia).<br>
+                    5. En el simulador, puedes arrastrar un "objeto" virtual para cambiar la distancia.<br>
+                    6. Abre el Monitor Serial para ver las lecturas.
+                </p>
+            </div>
+        </section>
+
+        <!-- Steps Section -->
+        <section class="section" id="pasos">
+            <div class="section-header">
+                <div class="section-number">05</div>
+                <h2 class="section-title">Paso a paso</h2>
+                <p class="section-intro">
+                    Monta tu sistema de alarma en 8 pasos.
+                </p>
+            </div>
+
+            <div class="steps-timeline">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Identifica los pines del HC-SR04</h4>
+                        <p>
+                            El sensor tiene 4 pines (de izquierda a derecha): VCC, TRIG, ECHO, GND.
+                            VCC va a 5V, GND va a tierra.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Conecta el HC-SR04</h4>
+                        <p>
+                            VCC a 5V de Arduino. GND a GND. TRIG al pin 7. ECHO al pin 6.
+                            El sensor ya esta listo para medir.
+                        </p>
+                        <div class="step-tip">
+                            <strong>Tip:</strong> Monta el sensor mirando hacia afuera de tu fortaleza,
+                            para detectar quien se acerca.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Conecta el buzzer</h4>
+                        <p>
+                            El buzzer tiene dos patas. La mas larga (o marcada con +) va al pin 8.
+                            La corta va a GND. Es un buzzer activo: solo necesita encenderse.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Conecta el LED</h4>
+                        <p>
+                            Pin 9 - resistencia 220ohm - LED (pata larga) - GND (pata corta).
+                            Sera el indicador visual de alarma.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Sube el codigo</h4>
+                        <p>
+                            Conecta Arduino, abre Arduino IDE, pega el codigo y subelo.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h4>Abre el Monitor Serial</h4>
+                        <p>
+                            Ctrl+Shift+M para ver las lecturas de distancia en tiempo real.
+                            Acerca la mano al sensor y observa como cambian los numeros.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <h4>Ajusta la distancia de alarma</h4>
+                        <p>
+                            Cambia <code>DISTANCIA_ALARMA</code> segun el tamano de tu fortaleza.
+                            20cm es un buen valor inicial. Para fortalezas grandes, prueba 50cm.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">8</div>
+                    <div class="step-content">
+                        <h4>Juego: No actives la alarma!</h4>
+                        <p>
+                            El nino intenta acercar la mano a la fortaleza sin que suene la alarma.
+                            Muevete lento... muy lento... oops!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section" id="experimentos">
+            <div class="section-header">
+                <div class="section-number">06</div>
+                <h2 class="section-title">Experimentos</h2>
+                <p class="section-intro">
+                    Mejora tu sistema de alarma con estas modificaciones.
+                </p>
+            </div>
+
+            <div class="experiments-grid">
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Facil</span>
+                    <h4>Cambia la sensibilidad</h4>
+                    <p>
+                        Modifica <code>DISTANCIA_ALARMA</code> a 10cm (muy sensible)
+                        o 50cm (detecta de lejos).
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Facil</span>
+                    <h4>LED parpadeante</h4>
+                    <p>
+                        En lugar de LED fijo, hazlo parpadear durante la alarma
+                        con <code>delay(100)</code> entre HIGH y LOW.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Medio</span>
+                    <h4>Cuenta atras</h4>
+                    <p>
+                        Antes de activar la alarma, da 3 segundos de advertencia
+                        con el LED parpadeando rapido.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Medio</span>
+                    <h4>Diferentes tonos</h4>
+                    <p>
+                        Usa un buzzer pasivo y <code>tone(BUZZER, 1000)</code>
+                        para crear diferentes frecuencias de alarma.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Desafio</span>
+                    <h4>Zonas de alerta</h4>
+                    <p>
+                        Menos de 10cm: alarma fuerte. 10-30cm: advertencia suave.
+                        Mas de 30cm: todo tranquilo. Usa multiples <code>if/else if</code>.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Desafio</span>
+                    <h4>Medidor de distancia</h4>
+                    <p>
+                        Anade un segundo LED. Usa <code>map()</code> para que el brillo
+                        del LED indique la distancia (mas cerca = mas brillante).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="project-nav">
+            <a href="p2-nave.html" class="nav-button">
+                <span>&lt;-</span>
+                <div class="nav-button-text">
+                    <span class="nav-button-label">Proyecto anterior</span>
+                    <span class="nav-button-title">P2: Nave con Luces</span>
+                </div>
+            </a>
+            <a href="p4-girasol.html" class="nav-button">
+                <div class="nav-button-text" style="text-align: right;">
+                    <span class="nav-button-label">Siguiente proyecto</span>
+                    <span class="nav-button-title">P4: Girasol Robot</span>
+                </div>
+                <span>-></span>
+            </a>
+        </nav>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-logo orbitron">EIGENROBOTICS</div>
+        <p class="footer-text">Piano piano. Cada proyecto construye sobre el anterior.</p>
+    </footer>
+
+    <script>
+        // Syntax highlighting
+        hljs.highlightAll();
+
+        // Interactive alarm demo
+        const intruder = document.getElementById('intruder');
+        const alarmLight = document.getElementById('alarm-light');
+        const distanceDisplay = document.getElementById('distance-display');
+        const btnFar = document.getElementById('btn-far');
+        const btnNear = document.getElementById('btn-near');
+
+        function setDistance(distance, position) {
+            distanceDisplay.textContent = distance;
+            intruder.style.right = position;
+
+            if (distance < 20) {
+                alarmLight.classList.add('active');
+            } else {
+                alarmLight.classList.remove('active');
+            }
+        }
+
+        btnFar.addEventListener('click', () => {
+            btnFar.classList.add('active');
+            btnNear.classList.remove('active');
+            setDistance(45, '-30px');
+        });
+
+        btnNear.addEventListener('click', () => {
+            btnNear.classList.add('active');
+            btnFar.classList.remove('active');
+            setDistance(15, '90px');
+        });
+
+        // Copy code function
+        function copyCode() {
+            const code = document.querySelector('pre code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.code-copy');
+                btn.textContent = 'Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar codigo';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>
