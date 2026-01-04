@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P4: Girasol Robot - EigenRobotics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #1a1a24;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.1);
+            --accent-secondary: #fbbf24;
+            --border: rgba(255,255,255,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 140px 2rem 80px;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(16, 185, 129, 0.15) 0%, transparent 50%);
+        }
+
+        .hero-level {
+            display: inline-block;
+            padding: 6px 16px;
+            background: var(--accent-dim);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Sections */
+        .section {
+            padding: 4rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-number {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .section-intro {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        /* Result Section */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .result-visual {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 380px;
+        }
+
+        /* Sunflower Demo */
+        .sunflower-demo {
+            position: relative;
+            width: 280px;
+            height: 250px;
+        }
+
+        .sun {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--accent-secondary);
+            border-radius: 50%;
+            box-shadow: 0 0 40px var(--accent-secondary);
+            transition: left 0.5s ease;
+            top: 10px;
+        }
+
+        .sun-rays {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+        }
+
+        .sun-rays::before,
+        .sun-rays::after {
+            content: '';
+            position: absolute;
+            background: var(--accent-secondary);
+        }
+
+        .flower-container {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .flower-stem {
+            width: 8px;
+            height: 100px;
+            background: linear-gradient(to bottom, #22c55e, #15803d);
+            margin: 0 auto;
+            border-radius: 4px;
+        }
+
+        .flower-head {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            transition: transform 0.3s ease;
+        }
+
+        .flower-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #92400e 0%, #78350f 100%);
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .petal {
+            position: absolute;
+            width: 25px;
+            height: 35px;
+            background: var(--accent-secondary);
+            border-radius: 50% 50% 50% 50%;
+            top: 50%;
+            left: 50%;
+            transform-origin: center bottom;
+        }
+
+        .petal:nth-child(1) { transform: translate(-50%, -100%) rotate(0deg); }
+        .petal:nth-child(2) { transform: translate(-50%, -100%) rotate(45deg); }
+        .petal:nth-child(3) { transform: translate(-50%, -100%) rotate(90deg); }
+        .petal:nth-child(4) { transform: translate(-50%, -100%) rotate(135deg); }
+        .petal:nth-child(5) { transform: translate(-50%, -100%) rotate(180deg); }
+        .petal:nth-child(6) { transform: translate(-50%, -100%) rotate(225deg); }
+        .petal:nth-child(7) { transform: translate(-50%, -100%) rotate(270deg); }
+        .petal:nth-child(8) { transform: translate(-50%, -100%) rotate(315deg); }
+
+        .ldr-sensor {
+            position: absolute;
+            bottom: 110px;
+            width: 20px;
+            height: 20px;
+            background: #374151;
+            border-radius: 50%;
+            border: 2px solid #6b7280;
+        }
+
+        .ldr-sensor.left {
+            left: 70px;
+        }
+
+        .ldr-sensor.right {
+            right: 70px;
+        }
+
+        .ldr-sensor .reading {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+        }
+
+        .demo-controls {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .demo-controls p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .sun-slider {
+            width: 200px;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-code);
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .sun-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--accent-secondary);
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 0 15px var(--accent-secondary);
+        }
+
+        .angle-display {
+            margin-top: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+        }
+
+        .result-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-text h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-list li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .result-list li:last-child {
+            border-bottom: none;
+        }
+
+        .result-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-dim);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        /* Components Grid */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .component-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .component-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .component-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+        }
+
+        .component-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .component-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Voltage Divider Diagram */
+        .divider-diagram {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .divider-diagram h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .divider-svg {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Circuit Diagram */
+        .circuit-diagram {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .circuit-diagram h4 {
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .circuit-svg {
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Explanation Card */
+        .explanation-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        .explanation-card h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .explanation-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .explanation-card .highlight {
+            background: var(--accent-dim);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        /* Code Section */
+        .code-container {
+            position: relative;
+            margin: 2rem 0;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e1e28;
+            padding: 0.75rem 1rem;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid var(--border);
+            border-bottom: none;
+        }
+
+        .code-filename {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .code-copy {
+            background: var(--accent);
+            border: none;
+            color: var(--bg-dark);
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .code-copy:hover {
+            transform: scale(1.05);
+        }
+
+        .code-copy.copied {
+            background: #22c55e;
+        }
+
+        pre {
+            margin: 0;
+            border-radius: 0 0 12px 12px;
+            border: 1px solid var(--border);
+            border-top: none;
+        }
+
+        pre code {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        /* Code Explanation */
+        .code-explanation {
+            margin-top: 2rem;
+        }
+
+        .code-line {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .code-line:hover {
+            border-color: var(--accent);
+        }
+
+        .line-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-dim);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .line-content h4 {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .line-content h4 code {
+            background: var(--bg-code);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: var(--accent);
+        }
+
+        .line-content p {
+            color: var(--text-secondary);
+        }
+
+        /* Concepts Grid */
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .concept-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .concept-card h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concept-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .concept-card code {
+            background: var(--bg-code);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Simulator */
+        .simulator-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .simulator-header {
+            padding: 1rem 1.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .simulator-header h4 {
+            color: var(--accent);
+        }
+
+        .simulator-header a {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+
+        .simulator-header a:hover {
+            color: var(--accent);
+        }
+
+        .simulator-embed {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        /* Steps Timeline */
+        .steps-timeline {
+            position: relative;
+            margin: 2rem 0;
+            padding-left: 3rem;
+        }
+
+        .steps-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .step {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .step:last-child {
+            padding-bottom: 0;
+        }
+
+        .step-number {
+            position: absolute;
+            left: -3rem;
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-dark);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .step-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .step-content h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+        }
+
+        .step-tip {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--accent-dim);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .step-tip strong {
+            color: var(--accent);
+        }
+
+        /* Experiments Grid */
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .experiment-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+
+        .experiment-card:hover {
+            border-color: var(--accent);
+        }
+
+        .experiment-difficulty {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--accent-dim);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-card h4 {
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* LEGO Section */
+        .lego-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid var(--border);
+        }
+
+        .lego-section h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lego-ideas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .lego-idea {
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .lego-idea span {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Navigation */
+        .project-nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 3rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .nav-button:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .nav-button-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-button-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-button-title {
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-logo {
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-text {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-meta {
+                gap: 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .code-line {
+                grid-template-columns: 1fr;
+            }
+
+            .line-number {
+                width: auto;
+                padding: 0.5rem 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .project-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="../index.html" class="nav-logo orbitron">EIGENROBOTICS</a>
+        <div class="nav-links">
+            <a href="#resultado">Resultado</a>
+            <a href="#hardware">Hardware</a>
+            <a href="#codigo">Codigo</a>
+            <a href="#simulador">Simulador</a>
+            <a href="#pasos">Paso a paso</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <span class="hero-level">Nivel 2 - Inputs + Outputs</span>
+        <h1 class="hero-title orbitron">P4: GIRASOL</h1>
+        <p class="hero-subtitle">
+            Una flor robotica que sigue la luz, como un girasol de verdad.
+            Dos sensores de luz compiten para decidir hacia donde girar el servo.
+        </p>
+        <div class="hero-meta">
+            <div class="meta-item">
+                <div class="meta-value orbitron">60</div>
+                <div class="meta-label">Minutos</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-value orbitron">6</div>
+                <div class="meta-label">Componentes</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-value orbitron">83</div>
+                <div class="meta-label">Lineas de codigo</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Resultado Section -->
+        <section class="section" id="resultado">
+            <div class="section-header">
+                <div class="section-number">01</div>
+                <h2 class="section-title">Que vamos a conseguir?</h2>
+                <p class="section-intro">
+                    Un girasol que gira su cabeza hacia donde hay mas luz.
+                    Si mueves una linterna, la flor la sigue.
+                </p>
+            </div>
+
+            <div class="result-grid">
+                <div class="result-visual">
+                    <div class="sunflower-demo">
+                        <div class="sun" id="sun"></div>
+                        <div class="ldr-sensor left">
+                            <span class="reading" id="ldr-left">512</span>
+                        </div>
+                        <div class="ldr-sensor right">
+                            <span class="reading" id="ldr-right">512</span>
+                        </div>
+                        <div class="flower-container">
+                            <div class="flower-head" id="flower-head">
+                                <div class="petal"></div>
+                                <div class="petal"></div>
+                                <div class="petal"></div>
+                                <div class="petal"></div>
+                                <div class="petal"></div>
+                                <div class="petal"></div>
+                                <div class="petal"></div>
+                                <div class="petal"></div>
+                                <div class="flower-center"></div>
+                            </div>
+                            <div class="flower-stem"></div>
+                        </div>
+                    </div>
+                    <div class="demo-controls">
+                        <p>Mueve el sol con el slider:</p>
+                        <input type="range" min="0" max="100" value="50" class="sun-slider" id="sun-slider">
+                        <div class="angle-display">Servo: <span id="angle-display">90</span> grados</div>
+                    </div>
+                </div>
+                <div class="result-text">
+                    <h3>Lo que aprenderas:</h3>
+                    <ul class="result-list">
+                        <li>
+                            <span class="result-icon">1</span>
+                            <span>Como funciona una fotorresistencia (LDR)</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">2</span>
+                            <span>Comparar dos sensores para tomar decisiones</span>
+                        </li>
+                        <li>
+                            <span class="result-icon">3</span>
+                            <span>Usar la libreria <code>Servo.h</code></span>
+                        </li>
+                        <li>
+                            <span class="result-icon">4</span>
+                            <span>Crear un divisor de voltaje</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hardware Section -->
+        <section class="section" id="hardware">
+            <div class="section-header">
+                <div class="section-number">02</div>
+                <h2 class="section-title">Hardware necesario</h2>
+                <p class="section-intro">
+                    Los LDRs son sensores de luz baratos. El servo convierte senales electricas en movimiento angular.
+                </p>
+            </div>
+
+            <div class="components-grid">
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="16" width="48" height="32" rx="2" fill="#0d9488" stroke="#14b8a6" stroke-width="2"/>
+                        <rect x="12" y="20" width="8" height="8" fill="#1e1e1e"/>
+                        <circle cx="52" cy="24" r="2" fill="#ef4444"/>
+                    </svg>
+                    <div class="component-name">Arduino UNO</div>
+                    <div class="component-desc">El cerebro</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <circle cx="32" cy="32" r="18" fill="#374151" stroke="#6b7280" stroke-width="2"/>
+                        <path d="M20 32 Q32 20 44 32 Q32 44 20 32" fill="#fbbf24" opacity="0.5"/>
+                        <circle cx="32" cy="32" r="8" fill="#4b5563"/>
+                    </svg>
+                    <div class="component-name">2x LDR</div>
+                    <div class="component-desc">Fotorresistencias</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="12" y="20" width="40" height="28" rx="4" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+                        <circle cx="32" cy="16" r="8" fill="#3b82f6" stroke="#1e40af" stroke-width="2"/>
+                        <rect x="16" y="48" width="8" height="8" fill="#f97316"/>
+                        <rect x="28" y="48" width="8" height="8" fill="#ef4444"/>
+                        <rect x="40" y="48" width="8" height="8" fill="#78350f"/>
+                    </svg>
+                    <div class="component-name">Servo SG90</div>
+                    <div class="component-desc">Motor de posicion</div>
+                </div>
+
+                <div class="component-card">
+                    <svg class="component-icon" viewBox="0 0 64 64" fill="none">
+                        <rect x="8" y="26" width="48" height="12" rx="2" fill="#d4a574"/>
+                        <rect x="4" y="28" width="8" height="8" fill="#94a3b8"/>
+                        <rect x="52" y="28" width="8" height="8" fill="#94a3b8"/>
+                    </svg>
+                    <div class="component-name">2x Resistencia 10k</div>
+                    <div class="component-desc">Para divisor de voltaje</div>
+                </div>
+            </div>
+
+            <!-- Voltage Divider Diagram -->
+            <div class="divider-diagram">
+                <h4>El divisor de voltaje</h4>
+                <svg class="divider-svg" viewBox="0 0 400 250" fill="none">
+                    <!-- Title -->
+                    <text x="200" y="25" text-anchor="middle" fill="#64748b" font-size="12">Por que necesitamos la resistencia de 10k?</text>
+
+                    <!-- 5V -->
+                    <circle cx="100" cy="60" r="20" fill="#ef4444" opacity="0.2" stroke="#ef4444" stroke-width="2"/>
+                    <text x="100" y="65" text-anchor="middle" fill="#ef4444" font-size="12" font-weight="bold">5V</text>
+
+                    <!-- Wire down -->
+                    <line x1="100" y1="80" x2="100" y2="100" stroke="#ef4444" stroke-width="2"/>
+
+                    <!-- LDR -->
+                    <rect x="75" y="100" width="50" height="40" rx="4" fill="#374151" stroke="#6b7280" stroke-width="2"/>
+                    <text x="100" y="125" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="bold">LDR</text>
+                    <text x="160" y="120" fill="#64748b" font-size="10">Luz = baja R</text>
+                    <text x="160" y="135" fill="#64748b" font-size="10">Oscuro = alta R</text>
+
+                    <!-- Wire to A0 -->
+                    <line x1="100" y1="140" x2="100" y2="160" stroke="#10b981" stroke-width="2"/>
+                    <circle cx="100" cy="160" r="5" fill="#10b981"/>
+                    <line x1="105" y1="160" x2="150" y2="160" stroke="#10b981" stroke-width="2"/>
+                    <text x="170" y="165" fill="#10b981" font-size="11" font-weight="bold">A0</text>
+
+                    <!-- 10k resistor -->
+                    <line x1="100" y1="165" x2="100" y2="180" stroke="#94a3b8" stroke-width="2"/>
+                    <rect x="75" y="180" width="50" height="25" rx="4" fill="#d4a574" stroke="#a37d55" stroke-width="2"/>
+                    <text x="100" y="197" text-anchor="middle" fill="#1e1e1e" font-size="9" font-weight="bold">10k</text>
+
+                    <!-- Wire to GND -->
+                    <line x1="100" y1="205" x2="100" y2="230" stroke="#333" stroke-width="2"/>
+
+                    <!-- GND -->
+                    <line x1="80" y1="230" x2="120" y2="230" stroke="#333" stroke-width="3"/>
+                    <line x1="85" y1="235" x2="115" y2="235" stroke="#333" stroke-width="2"/>
+                    <line x1="90" y1="240" x2="110" y2="240" stroke="#333" stroke-width="1"/>
+                    <text x="100" y="255" text-anchor="middle" fill="#64748b" font-size="10">GND</text>
+
+                    <!-- Explanation -->
+                    <rect x="220" y="80" width="160" height="120" rx="8" fill="#1a1a24" stroke="#333"/>
+                    <text x="300" y="105" text-anchor="middle" fill="#10b981" font-size="11" font-weight="bold">Como funciona:</text>
+                    <text x="235" y="130" fill="#94a3b8" font-size="10">Mucha luz:</text>
+                    <text x="235" y="145" fill="#64748b" font-size="9">LDR baja, A0 cerca de 5V</text>
+                    <text x="235" y="170" fill="#94a3b8" font-size="10">Poca luz:</text>
+                    <text x="235" y="185" fill="#64748b" font-size="9">LDR alta, A0 cerca de 0V</text>
+                </svg>
+            </div>
+
+            <!-- Circuit Diagram -->
+            <div class="circuit-diagram">
+                <h4>Diagrama de conexion</h4>
+                <svg class="circuit-svg" viewBox="0 0 700 380" fill="none">
+                    <!-- Arduino Board -->
+                    <rect x="30" y="100" width="180" height="200" rx="8" fill="#0d9488" stroke="#14b8a6" stroke-width="2"/>
+                    <text x="120" y="205" text-anchor="middle" fill="white" font-size="14" font-weight="bold">ARDUINO UNO</text>
+
+                    <!-- Pin labels -->
+                    <rect x="200" y="120" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="132" text-anchor="middle" fill="#ef4444" font-size="8">5V</text>
+
+                    <rect x="200" y="150" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="162" text-anchor="middle" fill="#10b981" font-size="9" font-weight="bold">A0</text>
+
+                    <rect x="200" y="180" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="192" text-anchor="middle" fill="#22c55e" font-size="9" font-weight="bold">A1</text>
+
+                    <rect x="200" y="210" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="222" text-anchor="middle" fill="#f97316" font-size="9" font-weight="bold">~9</text>
+
+                    <rect x="200" y="260" width="30" height="15" fill="#1e1e1e" stroke="#333"/>
+                    <text x="215" y="272" text-anchor="middle" fill="#64748b" font-size="8">GND</text>
+
+                    <!-- LDR Left -->
+                    <circle cx="350" cy="130" r="25" fill="#374151" stroke="#6b7280" stroke-width="2"/>
+                    <circle cx="350" cy="130" r="12" fill="#4b5563"/>
+                    <text x="350" y="135" text-anchor="middle" fill="#fbbf24" font-size="9">LDR</text>
+                    <text x="350" y="100" text-anchor="middle" fill="#64748b" font-size="10">Izquierda</text>
+
+                    <!-- LDR Right -->
+                    <circle cx="450" cy="130" r="25" fill="#374151" stroke="#6b7280" stroke-width="2"/>
+                    <circle cx="450" cy="130" r="12" fill="#4b5563"/>
+                    <text x="450" y="135" text-anchor="middle" fill="#fbbf24" font-size="9">LDR</text>
+                    <text x="450" y="100" text-anchor="middle" fill="#64748b" font-size="10">Derecha</text>
+
+                    <!-- 10k Resistors -->
+                    <rect x="325" y="200" width="50" height="20" rx="3" fill="#d4a574" stroke="#a37d55"/>
+                    <text x="350" y="214" text-anchor="middle" fill="#1e1e1e" font-size="8">10k</text>
+
+                    <rect x="425" y="200" width="50" height="20" rx="3" fill="#d4a574" stroke="#a37d55"/>
+                    <text x="450" y="214" text-anchor="middle" fill="#1e1e1e" font-size="8">10k</text>
+
+                    <!-- Servo -->
+                    <rect x="550" y="180" width="80" height="60" rx="4" fill="#1e40af" stroke="#3b82f6" stroke-width="2"/>
+                    <circle cx="590" cy="195" r="15" fill="#3b82f6" stroke="#1e40af" stroke-width="2"/>
+                    <text x="590" y="255" text-anchor="middle" fill="#64748b" font-size="10">SERVO SG90</text>
+
+                    <!-- Servo wires -->
+                    <rect x="560" y="240" width="15" height="20" fill="#f97316"/>
+                    <rect x="580" y="240" width="15" height="20" fill="#ef4444"/>
+                    <rect x="600" y="240" width="15" height="20" fill="#78350f"/>
+                    <text x="567" y="275" text-anchor="middle" fill="#f97316" font-size="7">SIG</text>
+                    <text x="587" y="275" text-anchor="middle" fill="#ef4444" font-size="7">5V</text>
+                    <text x="607" y="275" text-anchor="middle" fill="#78350f" font-size="7">GND</text>
+
+                    <!-- Wires: 5V to LDRs -->
+                    <path d="M230 127 L280 127 L280 110 L350 110 L350 105" stroke="#ef4444" stroke-width="2"/>
+                    <path d="M280 110 L450 110 L450 105" stroke="#ef4444" stroke-width="2"/>
+
+                    <!-- Wires: LDRs to A0/A1 -->
+                    <path d="M350 155 L350 180 L300 180 L300 157 L230 157" stroke="#10b981" stroke-width="2"/>
+                    <path d="M450 155 L450 180 L320 180 L320 187 L230 187" stroke="#22c55e" stroke-width="2"/>
+
+                    <!-- Wires: LDRs to 10k -->
+                    <path d="M350 180 L350 200" stroke="#94a3b8" stroke-width="2"/>
+                    <path d="M450 180 L450 200" stroke="#94a3b8" stroke-width="2"/>
+
+                    <!-- Wires: 10k to GND -->
+                    <path d="M350 220 L350 267" stroke="#333" stroke-width="2"/>
+                    <path d="M450 220 L450 267" stroke="#333" stroke-width="2"/>
+
+                    <!-- Wire: Pin 9 to Servo -->
+                    <path d="M230 217 L500 217 L500 250 L560 250" stroke="#f97316" stroke-width="2"/>
+
+                    <!-- Wire: 5V to Servo -->
+                    <path d="M280 127 L280 300 L587 300 L587 260" stroke="#ef4444" stroke-width="2"/>
+
+                    <!-- GND bus -->
+                    <path d="M230 267 L607 267" stroke="#333" stroke-width="3"/>
+                    <path d="M607 267 L607 260" stroke="#333" stroke-width="2"/>
+
+                    <!-- Legend -->
+                    <text x="30" y="340" fill="#10b981" font-size="10">A0: LDR Izquierda</text>
+                    <text x="150" y="340" fill="#22c55e" font-size="10">A1: LDR Derecha</text>
+                    <text x="280" y="340" fill="#f97316" font-size="10">Pin 9: Servo</text>
+                    <text x="400" y="340" fill="#d4a574" font-size="10">10k: Divisor voltaje</text>
+                </svg>
+            </div>
+
+            <!-- Component Explanations -->
+            <div class="explanation-card">
+                <h4>
+                    <span>LDR - Light Dependent Resistor</span>
+                </h4>
+                <p>
+                    La fotorresistencia cambia su resistencia segun la luz que recibe.
+                    <span class="highlight">Mas luz = menos resistencia</span> (puede bajar a ~1kohm).
+                    <span class="highlight">Menos luz = mas resistencia</span> (puede subir a ~10Mohm).
+                    Con el divisor de voltaje, convertimos ese cambio de resistencia en un voltaje que Arduino puede leer.
+                </p>
+            </div>
+
+            <div class="explanation-card">
+                <h4>
+                    <span>Servo SG90 - Los 3 cables</span>
+                </h4>
+                <p>
+                    <span class="highlight">Naranja (Signal)</span>: Recibe la senal PWM que indica el angulo (0-180 grados).<br>
+                    <span class="highlight">Rojo (VCC)</span>: Alimentacion 5V.<br>
+                    <span class="highlight">Marron (GND)</span>: Tierra.<br><br>
+                    El servo SG90 puede girar de 0 a 180 grados. La posicion 90 es el centro.
+                </p>
+            </div>
+
+            <!-- LEGO Ideas -->
+            <div class="lego-section">
+                <h4>Ideas para construir con LEGO</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    El nino construye la flor mientras tu preparas la electronica:
+                </p>
+                <div class="lego-ideas">
+                    <div class="lego-idea">
+                        <span>Girasol</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Petalos amarillos, tallo verde</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Buho</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Cabeza que gira buscando luz</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Radar</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Antena de seguimiento</p>
+                    </div>
+                    <div class="lego-idea">
+                        <span>Panel Solar</span>
+                        <p style="font-size: 0.85rem; color: var(--text-dim);">Que sigue el sol</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Section -->
+        <section class="section" id="codigo">
+            <div class="section-header">
+                <div class="section-number">03</div>
+                <h2 class="section-title">El codigo explicado</h2>
+                <p class="section-intro">
+                    Este programa compara dos sensores y mueve el servo hacia donde hay mas luz.
+                </p>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-filename mono">p4_girasol.ino</span>
+                    <button class="code-copy" onclick="copyCode()">Copiar codigo</button>
+                </div>
+                <pre><code class="language-cpp">// P4: Girasol Robot - EigenRobotics
+
+#include &lt;Servo.h&gt;
+
+const int LDR_IZQ = A0;
+const int LDR_DER = A1;
+const int SERVO_PIN = 9;
+
+const int UMBRAL = 50;      // Diferencia minima para moverse
+const int VELOCIDAD = 1;    // Grados por paso
+
+Servo servo;
+int posicion = 90;  // Empezar en el centro
+
+void setup() {
+  servo.attach(SERVO_PIN);
+  servo.write(posicion);
+
+  Serial.begin(9600);
+  Serial.println("Girasol Robot activado!");
+
+  delay(500);
+}
+
+void loop() {
+  // Leer ambos sensores
+  int luzIzq = analogRead(LDR_IZQ);
+  int luzDer = analogRead(LDR_DER);
+  int diferencia = luzIzq - luzDer;
+
+  // Mostrar valores
+  Serial.print("Izq: ");
+  Serial.print(luzIzq);
+  Serial.print(" | Der: ");
+  Serial.print(luzDer);
+  Serial.print(" | Pos: ");
+  Serial.println(posicion);
+
+  // Decidir movimiento
+  if (diferencia > UMBRAL && posicion > 0) {
+    posicion -= VELOCIDAD;  // Girar izquierda
+  }
+  else if (diferencia < -UMBRAL && posicion < 180) {
+    posicion += VELOCIDAD;  // Girar derecha
+  }
+
+  servo.write(posicion);
+  delay(20);
+}</code></pre>
+            </div>
+
+            <h3 style="margin: 2rem 0 1rem; color: var(--accent);">Explicacion linea por linea:</h3>
+
+            <div class="code-explanation">
+                <div class="code-line">
+                    <div class="line-number">1</div>
+                    <div class="line-content">
+                        <h4><code>#include &lt;Servo.h&gt;</code></h4>
+                        <p>
+                            Incluye la <strong>libreria Servo</strong>. Las librerias son codigo pre-escrito
+                            que anade funcionalidades. <code>Servo.h</code> nos da funciones para controlar servos
+                            facilmente sin tener que generar las senales PWM manualmente.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">2</div>
+                    <div class="line-content">
+                        <h4><code>Servo servo;</code></h4>
+                        <p>
+                            Crea un <strong>objeto</strong> de tipo Servo llamado "servo".
+                            Es como declarar una variable, pero en lugar de guardar un numero,
+                            guarda todo lo necesario para controlar un servo.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">3</div>
+                    <div class="line-content">
+                        <h4><code>servo.attach(SERVO_PIN);</code></h4>
+                        <p>
+                            Conecta el objeto servo al pin 9. A partir de ahora, cuando usemos
+                            <code>servo.write()</code>, Arduino enviara la senal correcta por ese pin.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">4</div>
+                    <div class="line-content">
+                        <h4><code>int diferencia = luzIzq - luzDer;</code></h4>
+                        <p>
+                            Calculamos la diferencia entre los dos sensores.
+                            Si <code>diferencia > 0</code>, hay mas luz a la izquierda.
+                            Si <code>diferencia < 0</code>, hay mas luz a la derecha.
+                            Si es cercana a 0, la luz esta equilibrada.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">5</div>
+                    <div class="line-content">
+                        <h4><code>if (diferencia > UMBRAL && posicion > 0)</code></h4>
+                        <p>
+                            Solo nos movemos si la diferencia es <strong>significativa</strong> (mayor que 50).
+                            Esto evita que el girasol tiemble por pequenas variaciones.
+                            Tambien comprobamos que no estemos ya en el limite (0 o 180 grados).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">6</div>
+                    <div class="line-content">
+                        <h4><code>posicion -= VELOCIDAD;</code></h4>
+                        <p>
+                            <code>-=</code> es una forma corta de escribir <code>posicion = posicion - 1</code>.
+                            Reducimos la posicion en 1 grado (girar hacia la izquierda).
+                            El movimiento es suave porque solo cambiamos 1 grado cada 20ms.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="code-line">
+                    <div class="line-number">7</div>
+                    <div class="line-content">
+                        <h4><code>servo.write(posicion);</code></h4>
+                        <p>
+                            Mueve el servo a la posicion indicada (0-180 grados).
+                            El servo mantiene esa posicion hasta que le digamos otra cosa.
+                            90 grados es el centro.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Concepts -->
+            <h3 style="margin: 3rem 0 1rem;">Conceptos clave:</h3>
+            <div class="concepts-grid">
+                <div class="concept-card">
+                    <h4>Libreria Servo.h</h4>
+                    <p>
+                        <code>attach(pin)</code>: conectar servo.<br>
+                        <code>write(angulo)</code>: mover a posicion (0-180).<br>
+                        <code>read()</code>: leer posicion actual.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Comparar sensores</h4>
+                    <p>
+                        Con dos sensores identicos, la <strong>diferencia</strong> entre ellos
+                        indica hacia donde esta la fuente (luz, sonido, calor...).
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Umbral (threshold)</h4>
+                    <p>
+                        Un valor minimo para actuar. Evita reaccionar a ruido o pequenas variaciones.
+                        Ajustalo segun la precision que necesites.
+                    </p>
+                </div>
+                <div class="concept-card">
+                    <h4>Operadores += y -=</h4>
+                    <p>
+                        <code>x += 5</code> es igual a <code>x = x + 5</code>.<br>
+                        <code>x -= 3</code> es igual a <code>x = x - 3</code>.<br>
+                        Tambien existen <code>*=</code> y <code>/=</code>.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulator Section -->
+        <section class="section" id="simulador">
+            <div class="section-header">
+                <div class="section-number">04</div>
+                <h2 class="section-title">Simulador interactivo</h2>
+                <p class="section-intro">
+                    En Wokwi puedes simular LDRs y servos. Cambia la luz haciendo clic en los sensores.
+                </p>
+            </div>
+
+            <div class="simulator-container">
+                <div class="simulator-header">
+                    <h4>Wokwi Simulator</h4>
+                    <a href="https://wokwi.com/projects/new/arduino-uno" target="_blank">Abrir en Wokwi</a>
+                </div>
+                <iframe
+                    class="simulator-embed"
+                    src="https://wokwi.com/projects/new/arduino-uno"
+                    loading="lazy"
+                ></iframe>
+            </div>
+
+            <div class="explanation-card">
+                <h4>
+                    <span>Configurar el simulador</span>
+                </h4>
+                <p>
+                    1. Copia el codigo del proyecto.<br>
+                    2. Anade 2 <span class="highlight">Photoresistor (LDR)</span> desde componentes.<br>
+                    3. Anade 2 resistencias de 10k para los divisores de voltaje.<br>
+                    4. Anade un <span class="highlight">Servo</span> y conectalo al pin 9.<br>
+                    5. En Wokwi, haz clic en los LDR para cambiar su nivel de luz.<br>
+                    6. Observa como el servo sigue la "luz".
+                </p>
+            </div>
+        </section>
+
+        <!-- Steps Section -->
+        <section class="section" id="pasos">
+            <div class="section-header">
+                <div class="section-number">05</div>
+                <h2 class="section-title">Paso a paso</h2>
+                <p class="section-intro">
+                    Monta tu girasol robot en 9 pasos.
+                </p>
+            </div>
+
+            <div class="steps-timeline">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Monta el primer divisor de voltaje (LDR izquierda)</h4>
+                        <p>
+                            5V - LDR - punto medio - resistencia 10k - GND.
+                            El punto medio se conecta a A0.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Monta el segundo divisor (LDR derecha)</h4>
+                        <p>
+                            Igual que el anterior pero conectando el punto medio a A1.
+                            Ambos LDRs deben estar separados unos 5-10cm entre si.
+                        </p>
+                        <div class="step-tip">
+                            <strong>Tip:</strong> Coloca los LDRs en los "ojos" de tu construccion LEGO,
+                            mirando ligeramente hacia afuera para detectar mejor la direccion de la luz.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Identifica los cables del servo</h4>
+                        <p>
+                            Naranja/Amarillo = Senal (pin 9).
+                            Rojo = 5V.
+                            Marron/Negro = GND.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Conecta el servo</h4>
+                        <p>
+                            Cable de senal al pin 9. Rojo a 5V. Marron a GND.
+                        </p>
+                        <div class="step-tip">
+                            <strong>Cuidado:</strong> Si conectas varios servos, pueden necesitar
+                            alimentacion externa. Un servo SG90 solo consume ~200mA, Arduino lo aguanta.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Sube el codigo</h4>
+                        <p>
+                            Conecta Arduino, abre Arduino IDE, pega el codigo y subelo.
+                            El servo deberia moverse al centro (90 grados).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <h4>Calibra con el Monitor Serial</h4>
+                        <p>
+                            Abre el Monitor Serial y observa los valores de ambos LDRs.
+                            Con luz ambiente uniforme, deberian ser similares (~400-600).
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <h4>Prueba con una linterna</h4>
+                        <p>
+                            Apunta una linterna hacia un lado. El servo deberia girar hacia ese lado.
+                            Si va al reves, intercambia las conexiones de A0 y A1.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">8</div>
+                    <div class="step-content">
+                        <h4>Ajusta el umbral</h4>
+                        <p>
+                            Si el girasol es muy nervioso, sube <code>UMBRAL</code> a 80-100.
+                            Si no reacciona, bajalo a 20-30.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">9</div>
+                    <div class="step-content">
+                        <h4>Monta la flor LEGO!</h4>
+                        <p>
+                            Fija el servo al tallo. Conecta la cabeza de la flor al brazo del servo.
+                            Los LDRs van en la cabeza, mirando hacia adelante.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section" id="experimentos">
+            <div class="section-header">
+                <div class="section-number">06</div>
+                <h2 class="section-title">Experimentos</h2>
+                <p class="section-intro">
+                    Mejora tu girasol con estas modificaciones.
+                </p>
+            </div>
+
+            <div class="experiments-grid">
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Facil</span>
+                    <h4>Ajusta sensibilidad</h4>
+                    <p>
+                        Cambia <code>UMBRAL</code> a 20 (muy sensible) o 100 (menos reactivo).
+                        Encuentra el valor ideal para tu entorno.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Facil</span>
+                    <h4>Cambia velocidad</h4>
+                    <p>
+                        <code>VELOCIDAD = 5</code> hace movimientos rapidos.
+                        <code>VELOCIDAD = 1</code> es suave y natural.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Medio</span>
+                    <h4>Modo vampiro</h4>
+                    <p>
+                        Invierte la logica: que EVITE la luz en lugar de seguirla.
+                        Cambia <code>-=</code> por <code>+=</code> y viceversa.
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Medio</span>
+                    <h4>LED indicador</h4>
+                    <p>
+                        Anade un LED que brille segun la luz total recibida:
+                        <code>analogWrite(LED, (luzIzq + luzDer) / 8)</code>
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Desafio</span>
+                    <h4>Dos ejes</h4>
+                    <p>
+                        Anade un segundo servo y 2 LDRs mas para movimiento
+                        arriba/abajo. Panel solar 2D!
+                    </p>
+                </div>
+
+                <div class="experiment-card">
+                    <span class="experiment-difficulty">Desafio</span>
+                    <h4>Modo busqueda</h4>
+                    <p>
+                        Si no detecta luz suficiente, que "busque" girando
+                        lentamente de lado a lado.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="project-nav">
+            <a href="p3-alarma.html" class="nav-button">
+                <span>&lt;-</span>
+                <div class="nav-button-text">
+                    <span class="nav-button-label">Proyecto anterior</span>
+                    <span class="nav-button-title">P3: Alarma</span>
+                </div>
+            </a>
+            <a href="p5-robot.html" class="nav-button">
+                <div class="nav-button-text" style="text-align: right;">
+                    <span class="nav-button-label">Siguiente proyecto</span>
+                    <span class="nav-button-title">P5: Robot Explorador</span>
+                </div>
+                <span>-></span>
+            </a>
+        </nav>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-logo orbitron">EIGENROBOTICS</div>
+        <p class="footer-text">Piano piano. Cada proyecto construye sobre el anterior.</p>
+    </footer>
+
+    <script>
+        // Syntax highlighting
+        hljs.highlightAll();
+
+        // Interactive sunflower demo
+        const sunSlider = document.getElementById('sun-slider');
+        const sun = document.getElementById('sun');
+        const flowerHead = document.getElementById('flower-head');
+        const angleDisplay = document.getElementById('angle-display');
+        const ldrLeft = document.getElementById('ldr-left');
+        const ldrRight = document.getElementById('ldr-right');
+
+        function updateSunflower(value) {
+            // Move sun
+            const sunX = 20 + (value * 2.2);
+            sun.style.left = sunX + 'px';
+
+            // Calculate LDR readings (inverse of distance from sun)
+            const leftReading = Math.max(0, Math.min(1023, 800 - Math.abs(value - 20) * 10));
+            const rightReading = Math.max(0, Math.min(1023, 800 - Math.abs(value - 80) * 10));
+
+            ldrLeft.textContent = Math.round(leftReading);
+            ldrRight.textContent = Math.round(rightReading);
+
+            // Calculate servo angle based on difference
+            const diff = leftReading - rightReading;
+            let angle = 90;
+            if (Math.abs(diff) > 50) {
+                angle = 90 - (diff / 10);
+                angle = Math.max(0, Math.min(180, angle));
+            }
+
+            angleDisplay.textContent = Math.round(angle);
+            flowerHead.style.transform = `rotate(${angle - 90}deg)`;
+        }
+
+        sunSlider.addEventListener('input', (e) => {
+            updateSunflower(parseInt(e.target.value));
+        });
+
+        updateSunflower(50);
+
+        // Copy code function
+        function copyCode() {
+            const code = document.querySelector('pre code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.code-copy');
+                btn.textContent = 'Copiado!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copiar codigo';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>
