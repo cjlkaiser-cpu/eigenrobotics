@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Arduino build files
+*.elf
+*.hex
+build/
+
+# IDE
+.vscode/
+*.swp
+*~
