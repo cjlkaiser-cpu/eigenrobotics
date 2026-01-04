@@ -38,6 +38,49 @@ Incluye:
 
 ---
 
+## Componentes adicionales para P6-P10
+
+### P6: Control Remoto IR
+| Componente | Cantidad | Precio aprox | Notas |
+|------------|----------|--------------|-------|
+| Receptor IR VS1838B | 1 | Incluido en kit | - |
+| Mando IR | 1 | Incluido en kit | - |
+
+*El kit ELEGOO incluye ambos.*
+
+### P7: Brazo Robótico
+| Componente | Cantidad | Precio aprox | Notas |
+|------------|----------|--------------|-------|
+| Servo SG90 | 3 | 6€ (pack 3) | 1 en kit, comprar 2 más |
+| Servo MG90S (opcional) | 1-2 | 4€ c/u | Más fuerza para pinza |
+| Fuente 5V 2A | 1 | 5€ | Para alimentar 3 servos |
+
+**Total adicional P7:** ~10-15€
+
+### P8: Seguidor de Línea
+| Componente | Cantidad | Precio aprox | Notas |
+|------------|----------|--------------|-------|
+| Sensor IR TCRT5000 | 2 | 3€ el par | Módulo con comparador |
+| Cinta aislante negra | 1 | 2€ | Para crear el circuito |
+
+**Total adicional P8:** ~5€
+
+### P9: Display LCD
+| Componente | Cantidad | Precio aprox | Notas |
+|------------|----------|--------------|-------|
+| LCD 16x2 con I2C | 1 | 4€ | Módulo con PCF8574 |
+
+**Total adicional P9:** ~4€
+
+### P10: Comunicación Serial
+| Componente | Cantidad | Precio aprox | Notas |
+|------------|----------|--------------|-------|
+| Cable USB | 1 | Incluido en kit | - |
+
+*Solo necesita el cable USB del kit.*
+
+---
+
 ## LEGO recomendado
 
 ### Para P1-P4 (LEGO normal)
@@ -58,17 +101,24 @@ Cualquier LEGO que tengáis sirve. El niño construye lo que quiera.
 
 ## Resumen de compra
 
-### Fase 1 (empezar ya)
+### Fase 1: P0-P4 (empezar ya)
 - [ ] ELEGOO Super Starter Kit - ~35€
 
-### Fase 2 (cuando llegues a P5)
+### Fase 2: P5-P6 (robot + control remoto)
 - [ ] 2x Motor TT - ~5€
 - [ ] Driver L298N - ~3€
 - [ ] Portapilas - ~2€
 - [ ] Pilas AA - ~3€
 - [ ] LEGO Technic (opcional) - ~15-20€
 
-**Total estimado:** 50-65€
+### Fase 3: P7-P10 (proyectos avanzados)
+- [ ] 2x Servo SG90 adicionales - ~4€
+- [ ] Fuente 5V 2A - ~5€
+- [ ] 2x Sensor IR TCRT5000 - ~3€
+- [ ] LCD 16x2 I2C - ~4€
+- [ ] Cinta aislante negra - ~2€
+
+**Total estimado todos los proyectos:** ~80-95€
 
 ---
 
