@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EigenRobotics - Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-section: #0f0f18;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #475569;
+
+            --red: #ef4444;
+            --orange: #f97316;
+            --amber: #f59e0b;
+            --yellow: #eab308;
+            --lime: #84cc16;
+            --green: #22c55e;
+            --emerald: #10b981;
+            --cyan: #06b6d4;
+            --blue: #3b82f6;
+            --violet: #8b5cf6;
+            --purple: #a855f7;
+            --pink: #ec4899;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           HERO SECTION
+           ═══════════════════════════════════════════════════════════════ */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 70%);
+        }
+
+        .hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, var(--cyan), var(--green), var(--yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.3s forwards;
+        }
+
+        .hero-tagline {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.6s forwards;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-tagline .tag {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hero-tagline .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            margin-top: 3rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.9s forwards;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            opacity: 0;
+            animation: fadeIn 1s ease 1.5s forwards, bounce 2s ease-in-out 2s infinite;
+        }
+
+        .scroll-indicator::after {
+            content: '↓';
+            font-size: 1.5rem;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           PROJECT SECTIONS
+           ═══════════════════════════════════════════════════════════════ */
+        .project-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-section:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .project-visual {
+            flex: 1;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-section);
+        }
+
+        .project-visual canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .project-content {
+            flex: 1;
+            padding: 60px 80px;
+            max-width: 650px;
+        }
+
+        .project-level {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            background: rgba(255,255,255,0.1);
+            color: var(--accent);
+        }
+
+        .project-number {
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .project-name {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+            letter-spacing: 0.05em;
+        }
+
+        .project-tagline {
+            font-size: 1.25rem;
+            color: var(--accent);
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+
+        .project-specs {
+            background: rgba(255,255,255,0.03);
+            border-left: 3px solid var(--accent);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .project-specs h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .spec-item {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .spec-item strong {
+            color: var(--text-primary);
+        }
+
+        .project-materials {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .material-tag {
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .project-roles {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .project-roles h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+        }
+
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .role {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .role-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .role-icon.kid {
+            background: linear-gradient(135deg, var(--yellow), var(--orange));
+        }
+
+        .role-icon.parent {
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+        }
+
+        .role-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .role-text strong {
+            display: block;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        /* Section colors */
+        .section-p0 { --accent: var(--green); }
+        .section-p1 { --accent: var(--red); }
+        .section-p2 { --accent: var(--cyan); }
+        .section-p3 { --accent: var(--orange); }
+        .section-p4 { --accent: var(--yellow); }
+        .section-p5 { --accent: var(--blue); }
+        .section-p6 { --accent: var(--purple); }
+        .section-p7 { --accent: var(--pink); }
+        .section-p8 { --accent: var(--emerald); }
+        .section-p9 { --accent: var(--violet); }
+        .section-p10 { --accent: var(--lime); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           INDEX SECTION
+           ═══════════════════════════════════════════════════════════════ */
+        .index-section {
+            padding: 100px 40px;
+            background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-section) 100%);
+        }
+
+        .index-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .index-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 4rem;
+        }
+
+        .index-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .index-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .index-card:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--card-color);
+            transform: translateY(-4px);
+        }
+
+        .index-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .index-card-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: var(--card-color);
+            color: var(--bg-dark);
+        }
+
+        .index-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .index-card-level {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .index-card-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .index-card-concepts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .concept-tag {
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: var(--card-color);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           FOOTER
+           ═══════════════════════════════════════════════════════════════ */
+        .footer {
+            padding: 80px 40px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: var(--bg-dark);
+        }
+
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .footer-tagline {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--cyan);
+        }
+
+        .footer-credits {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           NAVIGATION
+           ═══════════════════════════════════════════════════════════════ */
+        .nav-dots {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-dot:hover,
+        .nav-dot.active {
+            background: var(--cyan);
+            transform: scale(1.5);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .project-section {
+                flex-direction: column !important;
+                min-height: auto;
+            }
+
+            .project-visual {
+                height: 50vh;
+                width: 100%;
+            }
+
+            .project-content {
+                padding: 40px 30px;
+                max-width: 100%;
+            }
+
+            .nav-dots {
+                display: none;
+            }
+
+            .hero-stats {
+                gap: 2rem;
+            }
+
+            .spec-grid,
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-stats {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         HERO SECTION
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="hero" id="section-hero">
+        <canvas id="hero-canvas" class="hero-canvas"></canvas>
+        <div class="hero-content">
+            <h1 class="hero-title orbitron">
+                <span>EIGEN</span>ROBOTICS
+            </h1>
+            <p class="hero-subtitle">
+                Aprende robótica construyendo. Arduino + LEGO + diversión en familia.
+            </p>
+            <div class="hero-tagline">
+                <span class="tag">
+                    <span class="dot" style="background: var(--green)"></span>
+                    <span class="mono">Arduino</span>
+                </span>
+                <span class="tag">
+                    <span class="dot" style="background: var(--yellow)"></span>
+                    <span class="mono">LEGO</span>
+                </span>
+                <span class="tag">
+                    <span class="dot" style="background: var(--cyan)"></span>
+                    <span class="mono">C++</span>
+                </span>
+                <span class="tag">
+                    <span class="dot" style="background: var(--purple)"></span>
+                    <span class="mono">Familia</span>
+                </span>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-number orbitron">10</div>
+                    <div class="hero-stat-label">Proyectos</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number orbitron">5</div>
+                    <div class="hero-stat-label">Niveles</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number orbitron">~80€</div>
+                    <div class="hero-stat-label">Coste Total</div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">Explora los proyectos</div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         INDEX SECTION
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="index-section" id="section-index">
+        <h2 class="index-title orbitron">Roadmap de Proyectos</h2>
+        <p class="index-subtitle">10 proyectos progresivos. Del LED parpadeante al robot autónomo.</p>
+
+        <div class="index-grid">
+            <a href="#section-p0" class="index-card" style="--card-color: var(--green)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P0</div>
+                    <div>
+                        <div class="index-card-title">Blink</div>
+                        <div class="index-card-level">Nivel 0 · Setup</div>
+                    </div>
+                </div>
+                <p class="index-card-description">El "Hola Mundo" de Arduino. Tu primer LED parpadeando.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">digitalWrite</span>
+                    <span class="concept-tag">delay</span>
+                    <span class="concept-tag">loop</span>
+                </div>
+            </a>
+
+            <a href="#section-p1" class="index-card" style="--card-color: var(--red)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P1</div>
+                    <div>
+                        <div class="index-card-title">Semáforo LEGO</div>
+                        <div class="index-card-level">Nivel 1 · Outputs</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Semáforo real montado en una torre LEGO.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">múltiples LEDs</span>
+                    <span class="concept-tag">secuencias</span>
+                    <span class="concept-tag">timing</span>
+                </div>
+            </a>
+
+            <a href="#section-p2" class="index-card" style="--card-color: var(--cyan)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P2</div>
+                    <div>
+                        <div class="index-card-title">Nave con Luces</div>
+                        <div class="index-card-level">Nivel 1 · Outputs</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Construcción LEGO con LEDs controlados por perilla.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">PWM</span>
+                    <span class="concept-tag">analogRead</span>
+                    <span class="concept-tag">potenciómetro</span>
+                </div>
+            </a>
+
+            <a href="#section-p3" class="index-card" style="--card-color: var(--orange)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P3</div>
+                    <div>
+                        <div class="index-card-title">Alarma de Fortaleza</div>
+                        <div class="index-card-level">Nivel 2 · Inputs</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Sistema de seguridad con sensor ultrasónico.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">HC-SR04</span>
+                    <span class="concept-tag">buzzer</span>
+                    <span class="concept-tag">condicionales</span>
+                </div>
+            </a>
+
+            <a href="#section-p4" class="index-card" style="--card-color: var(--yellow)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P4</div>
+                    <div>
+                        <div class="index-card-title">Girasol Robot</div>
+                        <div class="index-card-level">Nivel 2 · Inputs</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Flor LEGO que sigue la luz como un girasol.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">LDR</span>
+                    <span class="concept-tag">servo</span>
+                    <span class="concept-tag">comparación</span>
+                </div>
+            </a>
+
+            <a href="#section-p5" class="index-card" style="--card-color: var(--blue)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P5</div>
+                    <div>
+                        <div class="index-card-title">Robot Explorador</div>
+                        <div class="index-card-level">Nivel 3 · Movimiento</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Robot móvil autónomo que evita obstáculos.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">motores DC</span>
+                    <span class="concept-tag">L298N</span>
+                    <span class="concept-tag">navegación</span>
+                </div>
+            </a>
+
+            <a href="#section-p6" class="index-card" style="--card-color: var(--purple)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P6</div>
+                    <div>
+                        <div class="index-card-title">Control Remoto IR</div>
+                        <div class="index-card-level">Nivel 4 · Inalámbrico</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Controla proyectos con mando infrarrojo.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">IRremote</span>
+                    <span class="concept-tag">decodificación</span>
+                    <span class="concept-tag">protocolo</span>
+                </div>
+            </a>
+
+            <a href="#section-p7" class="index-card" style="--card-color: var(--pink)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P7</div>
+                    <div>
+                        <div class="index-card-title">Brazo Robótico</div>
+                        <div class="index-card-level">Nivel 4 · Inalámbrico</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Brazo articulado con 3 servos y pinza.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">3 servos</span>
+                    <span class="concept-tag">secuencias</span>
+                    <span class="concept-tag">cinemática</span>
+                </div>
+            </a>
+
+            <a href="#section-p8" class="index-card" style="--card-color: var(--emerald)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P8</div>
+                    <div>
+                        <div class="index-card-title">Seguidor de Línea</div>
+                        <div class="index-card-level">Nivel 5 · Avanzado</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Robot que sigue líneas negras sobre blanco.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">sensores IR</span>
+                    <span class="concept-tag">calibración</span>
+                    <span class="concept-tag">control</span>
+                </div>
+            </a>
+
+            <a href="#section-p9" class="index-card" style="--card-color: var(--violet)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P9</div>
+                    <div>
+                        <div class="index-card-title">Display LCD</div>
+                        <div class="index-card-level">Nivel 5 · Avanzado</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Pantalla para mostrar mensajes y datos.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">I2C</span>
+                    <span class="concept-tag">LCD 16x2</span>
+                    <span class="concept-tag">caracteres</span>
+                </div>
+            </a>
+
+            <a href="#section-p10" class="index-card" style="--card-color: var(--lime)">
+                <div class="index-card-header">
+                    <div class="index-card-number">P10</div>
+                    <div>
+                        <div class="index-card-title">Comunicación Serial</div>
+                        <div class="index-card-level">Nivel 5 · Avanzado</div>
+                    </div>
+                </div>
+                <p class="index-card-description">Control desde ordenador via comandos.</p>
+                <div class="index-card-concepts">
+                    <span class="concept-tag">Serial</span>
+                    <span class="concept-tag">protocolo</span>
+                    <span class="concept-tag">Python</span>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P0: BLINK
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p0" id="section-p0">
+        <div class="project-visual">
+            <canvas id="canvas-p0"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 0 · Setup</span>
+            <div class="project-number">Proyecto 01 / 10</div>
+            <h2 class="project-name orbitron">BLINK</h2>
+            <p class="project-tagline">El "Hola Mundo" de la electrónica</p>
+
+            <p class="project-description">
+                Tu primera conexión con Arduino. Un LED que parpadea puede parecer simple,
+                pero es la base de todo: la verificación de que hardware, software y tú
+                estáis sincronizados.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 924 bytes</div>
+                    <div class="spec-item"><strong>Pins:</strong> 1 digital</div>
+                    <div class="spec-item"><strong>Tiempo:</strong> 15 min</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">LED</span>
+                <span class="material-tag">Resistencia 220Ω</span>
+                <span class="material-tag">Cables</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Elige color del LED y cuenta los parpadeos
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Instala IDE, cablea y sube el código
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P1: SEMÁFORO
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p1" id="section-p1">
+        <div class="project-visual">
+            <canvas id="canvas-p1"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 1 · Outputs</span>
+            <div class="project-number">Proyecto 02 / 10</div>
+            <h2 class="project-name orbitron">SEMÁFORO</h2>
+            <p class="project-tagline">Control de tráfico en tu ciudad LEGO</p>
+
+            <p class="project-description">
+                Tres LEDs sincronizados en secuencia realista. Verde, amarillo, rojo.
+                Montado en una torre LEGO construida por el niño. El primer proyecto
+                donde la electrónica se integra con la construcción física.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 1038 bytes</div>
+                    <div class="spec-item"><strong>Pins:</strong> 3 digitales</div>
+                    <div class="spec-item"><strong>Tiempo:</strong> 30 min</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">LED Rojo</span>
+                <span class="material-tag">LED Amarillo</span>
+                <span class="material-tag">LED Verde</span>
+                <span class="material-tag">3x Resistencia 220Ω</span>
+                <span class="material-tag">LEGO</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Construye la torre LEGO y juega con coches
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Cablea los 3 LEDs y programa la secuencia
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P2: NAVE CON LUCES
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p2" id="section-p2">
+        <div class="project-visual">
+            <canvas id="canvas-p2"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 1 · Outputs</span>
+            <div class="project-number">Proyecto 03 / 10</div>
+            <h2 class="project-name orbitron">NAVE CON LUCES</h2>
+            <p class="project-tagline">Controla el brillo con una perilla mágica</p>
+
+            <p class="project-description">
+                Una nave espacial, casa o vehículo LEGO con LEDs integrados.
+                El niño gira el potenciómetro y ve cómo cambia el brillo.
+                Primera introducción a señales analógicas y PWM.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 2630 bytes</div>
+                    <div class="spec-item"><strong>Pins:</strong> 1 analógico + 2 PWM</div>
+                    <div class="spec-item"><strong>Tiempo:</strong> 45 min</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">Potenciómetro 10kΩ</span>
+                <span class="material-tag">2-4 LEDs</span>
+                <span class="material-tag">Resistencias 220Ω</span>
+                <span class="material-tag">LEGO</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Construye nave y controla brillo con la perilla
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Programa PWM y integra LEDs en la construcción
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P3: ALARMA
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p3" id="section-p3">
+        <div class="project-visual">
+            <canvas id="canvas-p3"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 2 · Inputs + Outputs</span>
+            <div class="project-number">Proyecto 04 / 10</div>
+            <h2 class="project-name orbitron">ALARMA</h2>
+            <p class="project-tagline">¡Protege tu fortaleza de intrusos!</p>
+
+            <p class="project-description">
+                Sensor ultrasónico detecta movimiento. Si alguien se acerca demasiado,
+                ¡suena la alarma! Perfecto para proteger un castillo LEGO. El niño
+                intenta pasar sin activarla.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 4342 bytes</div>
+                    <div class="spec-item"><strong>Sensor:</strong> HC-SR04</div>
+                    <div class="spec-item"><strong>Rango:</strong> 2-400 cm</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">HC-SR04</span>
+                <span class="material-tag">Buzzer</span>
+                <span class="material-tag">LED Rojo</span>
+                <span class="material-tag">LEGO Castillo</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Construye fortaleza e intenta burlar la alarma
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Programa detección y ajusta sensibilidad
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P4: GIRASOL
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p4" id="section-p4">
+        <div class="project-visual">
+            <canvas id="canvas-p4"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 2 · Inputs + Outputs</span>
+            <div class="project-number">Proyecto 05 / 10</div>
+            <h2 class="project-name orbitron">GIRASOL</h2>
+            <p class="project-tagline">Una flor que sigue la luz</p>
+
+            <p class="project-description">
+                Dos sensores de luz comparan qué lado recibe más. Un servo gira
+                la flor hacia la fuente luminosa. El niño juega con una linterna
+                y ve cómo la flor lo sigue.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 3608 bytes</div>
+                    <div class="spec-item"><strong>Sensores:</strong> 2x LDR</div>
+                    <div class="spec-item"><strong>Actuador:</strong> Servo SG90</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">2x LDR</span>
+                <span class="material-tag">2x Resistencia 10kΩ</span>
+                <span class="material-tag">Servo SG90</span>
+                <span class="material-tag">LEGO Flor</span>
+                <span class="material-tag">Adaptador 3D</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Construye flor LEGO y juega con linterna
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Programa comparación de sensores y servo
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P5: ROBOT
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p5" id="section-p5">
+        <div class="project-visual">
+            <canvas id="canvas-p5"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 3 · Movimiento</span>
+            <div class="project-number">Proyecto 06 / 10</div>
+            <h2 class="project-name orbitron">ROBOT</h2>
+            <p class="project-tagline">Explorador autónomo que piensa solo</p>
+
+            <p class="project-description">
+                El proyecto estrella. Dos motores, sensor de obstáculos, cerebro Arduino.
+                El robot navega solo evitando paredes. El niño construye laberintos
+                con LEGO y ve si el robot puede escapar.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 4800 bytes</div>
+                    <div class="spec-item"><strong>Motores:</strong> 2x DC TT</div>
+                    <div class="spec-item"><strong>Driver:</strong> L298N</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">2x Motor DC</span>
+                <span class="material-tag">Driver L298N</span>
+                <span class="material-tag">HC-SR04</span>
+                <span class="material-tag">Portapilas</span>
+                <span class="material-tag">LEGO Technic</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Construye chasis y crea laberintos
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Programa navegación y control de motores
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P6: CONTROL IR
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p6" id="section-p6">
+        <div class="project-visual">
+            <canvas id="canvas-p6"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 4 · Control Inalámbrico</span>
+            <div class="project-number">Proyecto 07 / 10</div>
+            <h2 class="project-name orbitron">CONTROL IR</h2>
+            <p class="project-tagline">Tu varita mágica infrarroja</p>
+
+            <p class="project-description">
+                Un mando a distancia para controlar todo. Cada botón hace algo diferente.
+                Decodifica las señales, asigna acciones. Luego integra con el robot
+                para controlarlo a distancia.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 8394 bytes</div>
+                    <div class="spec-item"><strong>Librería:</strong> IRremote</div>
+                    <div class="spec-item"><strong>Protocolo:</strong> NEC</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">Receptor IR VS1838B</span>
+                <span class="material-tag">Mando IR</span>
+                <span class="material-tag">LEDs</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Apunta el mando y descubre qué hace cada botón
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Decodifica señales y asigna acciones
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P7: BRAZO
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p7" id="section-p7">
+        <div class="project-visual">
+            <canvas id="canvas-p7"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 4 · Control Inalámbrico</span>
+            <div class="project-number">Proyecto 08 / 10</div>
+            <h2 class="project-name orbitron">BRAZO</h2>
+            <p class="project-tagline">Agarra objetos como un robot industrial</p>
+
+            <p class="project-description">
+                Tres servos coordinados: base, codo y pinza. Control con potenciómetros
+                o secuencias programadas. El niño agarra piezas LEGO y las mueve
+                de un lado a otro.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 3982 bytes</div>
+                    <div class="spec-item"><strong>Servos:</strong> 3x SG90</div>
+                    <div class="spec-item"><strong>Grados libertad:</strong> 3</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">3x Servo SG90</span>
+                <span class="material-tag">3x Potenciómetro</span>
+                <span class="material-tag">Fuente 5V 2A</span>
+                <span class="material-tag">LEGO Technic</span>
+                <span class="material-tag">Pinza 3D</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Construye brazo y controla con perillas
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Programa movimiento coordinado y secuencias
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P8: SEGUIDOR
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p8" id="section-p8">
+        <div class="project-visual">
+            <canvas id="canvas-p8"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 5 · Avanzado</span>
+            <div class="project-number">Proyecto 09 / 10</div>
+            <h2 class="project-name orbitron">SEGUIDOR</h2>
+            <p class="project-tagline">Sigue la línea negra sin perderse</p>
+
+            <p class="project-description">
+                Clásico de la robótica. Dos sensores IR detectan contraste blanco/negro.
+                El robot ajusta dirección para mantenerse sobre la línea. El niño
+                diseña circuitos cada vez más difíciles.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 3024 bytes</div>
+                    <div class="spec-item"><strong>Sensores:</strong> 2x TCRT5000</div>
+                    <div class="spec-item"><strong>Algoritmo:</strong> Diferencial</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Robot P5</span>
+                <span class="material-tag">2x Sensor IR TCRT5000</span>
+                <span class="material-tag">Cinta negra</span>
+                <span class="material-tag">Cartulina blanca</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Diseña circuitos con cinta negra
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Calibra sensores y ajusta algoritmo
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P9: LCD
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p9" id="section-p9">
+        <div class="project-visual">
+            <canvas id="canvas-p9"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 5 · Avanzado</span>
+            <div class="project-number">Proyecto 10 / 10</div>
+            <h2 class="project-name orbitron">LCD</h2>
+            <p class="project-tagline">Mensajes en pantalla retro</p>
+
+            <p class="project-description">
+                Pantalla LCD 16x2 para mostrar información. Mensajes, datos de sensores,
+                menús interactivos. Comunicación I2C con solo 2 cables. Crea
+                caracteres personalizados: caritas, iconos, emojis.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 6382 bytes</div>
+                    <div class="spec-item"><strong>Display:</strong> 16x2 caracteres</div>
+                    <div class="spec-item"><strong>Protocolo:</strong> I2C</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">LCD 16x2 I2C</span>
+                <span class="material-tag">4 cables</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Decide qué mensajes mostrar y diseña iconos
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Programa I2C y crea caracteres custom
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         P10: SERIAL
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="project-section section-p10" id="section-p10">
+        <div class="project-visual">
+            <canvas id="canvas-p10"></canvas>
+        </div>
+        <div class="project-content">
+            <span class="project-level">Nivel 5 · Avanzado</span>
+            <div class="project-number">Proyecto 11 / 10</div>
+            <h2 class="project-name orbitron">SERIAL</h2>
+            <p class="project-tagline">El ordenador habla con Arduino</p>
+
+            <p class="project-description">
+                Comunicación bidireccional PC ↔ Arduino. Envía comandos desde el teclado,
+                recibe datos de sensores. Base para proyectos con interfaces gráficas,
+                Python, o control desde apps.
+            </p>
+
+            <div class="project-specs">
+                <h4>Especificaciones</h4>
+                <div class="spec-grid">
+                    <div class="spec-item"><strong>Código:</strong> 6326 bytes</div>
+                    <div class="spec-item"><strong>Baudrate:</strong> 9600</div>
+                    <div class="spec-item"><strong>Protocolo:</strong> Texto</div>
+                    <div class="spec-item"><strong>Dificultad:</strong> ⭐⭐⭐</div>
+                </div>
+            </div>
+
+            <div class="project-materials">
+                <span class="material-tag">Arduino UNO</span>
+                <span class="material-tag">Cable USB</span>
+                <span class="material-tag">Monitor Serial</span>
+                <span class="material-tag">Python (opcional)</span>
+            </div>
+
+            <div class="project-roles">
+                <h4>Roles</h4>
+                <div class="role-grid">
+                    <div class="role">
+                        <div class="role-icon kid">👦</div>
+                        <div class="role-text">
+                            <strong>El niño</strong>
+                            Escribe comandos y ve qué pasa
+                        </div>
+                    </div>
+                    <div class="role">
+                        <div class="role-icon parent">👨</div>
+                        <div class="role-text">
+                            <strong>El padre</strong>
+                            Diseña protocolo y crea interfaz Python
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════════ -->
+    <footer class="footer">
+        <div class="footer-logo orbitron">EIGENROBOTICS</div>
+        <p class="footer-tagline">Piano piano. Cada proyecto construye sobre el anterior.</p>
+        <div class="footer-links">
+            <a href="https://github.com/cjlkaiser-cpu/eigenrobotics" target="_blank">GitHub</a>
+            <a href="hardware/lista-compras.md">Lista de Compras</a>
+            <a href="3d-prints/README.md">Impresiones 3D</a>
+        </div>
+        <p class="footer-credits">
+            Creado con Claude Code · Arduino · LEGO · Amor familiar
+        </p>
+    </footer>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         JAVASCRIPT
+         ═══════════════════════════════════════════════════════════════ -->
+    <script>
+        // Navigation dots
+        const sections = document.querySelectorAll('section[id^="section-"]');
+        const navDots = document.getElementById('navDots');
+
+        sections.forEach((section, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+            dot.onclick = () => section.scrollIntoView({ behavior: 'smooth' });
+            navDots.appendChild(dot);
+        });
+
+        // Update active dot on scroll
+        window.addEventListener('scroll', () => {
+            const scrollPos = window.scrollY + window.innerHeight / 2;
+            const dots = document.querySelectorAll('.nav-dot');
+
+            sections.forEach((section, i) => {
+                const top = section.offsetTop;
+                const bottom = top + section.offsetHeight;
+                if (scrollPos >= top && scrollPos < bottom) {
+                    dots.forEach(d => d.classList.remove('active'));
+                    dots[i].classList.add('active');
+                }
+            });
+        });
+
+        // Hero canvas - Circuit board animation
+        const heroCanvas = document.getElementById('hero-canvas');
+        const heroCtx = heroCanvas.getContext('2d');
+
+        function resizeHeroCanvas() {
+            heroCanvas.width = window.innerWidth;
+            heroCanvas.height = window.innerHeight;
+        }
+        resizeHeroCanvas();
+        window.addEventListener('resize', resizeHeroCanvas);
+
+        class CircuitNode {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.connections = [];
+                this.pulse = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.02 + Math.random() * 0.02;
+            }
+        }
+
+        const nodes = [];
+        const gridSize = 80;
+
+        for (let x = gridSize; x < window.innerWidth; x += gridSize) {
+            for (let y = gridSize; y < window.innerHeight; y += gridSize) {
+                if (Math.random() > 0.3) {
+                    nodes.push(new CircuitNode(
+                        x + (Math.random() - 0.5) * 20,
+                        y + (Math.random() - 0.5) * 20
+                    ));
+                }
+            }
+        }
+
+        // Connect nearby nodes
+        nodes.forEach(node => {
+            nodes.forEach(other => {
+                if (node !== other) {
+                    const dist = Math.hypot(node.x - other.x, node.y - other.y);
+                    if (dist < gridSize * 1.5 && Math.random() > 0.5) {
+                        node.connections.push(other);
+                    }
+                }
+            });
+        });
+
+        function animateHero() {
+            heroCtx.fillStyle = 'rgba(10, 10, 15, 0.1)';
+            heroCtx.fillRect(0, 0, heroCanvas.width, heroCanvas.height);
+
+            // Draw connections
+            nodes.forEach(node => {
+                node.pulse += node.pulseSpeed;
+                const alpha = 0.1 + Math.sin(node.pulse) * 0.1;
+
+                node.connections.forEach(other => {
+                    heroCtx.beginPath();
+                    heroCtx.moveTo(node.x, node.y);
+                    heroCtx.lineTo(other.x, other.y);
+                    heroCtx.strokeStyle = `rgba(6, 182, 212, ${alpha})`;
+                    heroCtx.lineWidth = 1;
+                    heroCtx.stroke();
+                });
+            });
+
+            // Draw nodes
+            nodes.forEach(node => {
+                const size = 2 + Math.sin(node.pulse) * 1;
+                const alpha = 0.3 + Math.sin(node.pulse) * 0.3;
+
+                heroCtx.beginPath();
+                heroCtx.arc(node.x, node.y, size, 0, Math.PI * 2);
+                heroCtx.fillStyle = `rgba(34, 197, 94, ${alpha})`;
+                heroCtx.fill();
+            });
+
+            requestAnimationFrame(animateHero);
+        }
+        animateHero();
+
+        // Project canvases - LED animations
+        const projectCanvases = {
+            'canvas-p0': { color: '#22c55e', type: 'blink' },
+            'canvas-p1': { color: '#ef4444', type: 'semaforo' },
+            'canvas-p2': { color: '#06b6d4', type: 'fade' },
+            'canvas-p3': { color: '#f97316', type: 'pulse' },
+            'canvas-p4': { color: '#eab308', type: 'sun' },
+            'canvas-p5': { color: '#3b82f6', type: 'robot' },
+            'canvas-p6': { color: '#a855f7', type: 'ir' },
+            'canvas-p7': { color: '#ec4899', type: 'arm' },
+            'canvas-p8': { color: '#10b981', type: 'line' },
+            'canvas-p9': { color: '#8b5cf6', type: 'lcd' },
+            'canvas-p10': { color: '#84cc16', type: 'serial' }
+        };
+
+        Object.entries(projectCanvases).forEach(([id, config]) => {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            let time = 0;
+
+            function resize() {
+                canvas.width = canvas.parentElement.offsetWidth;
+                canvas.height = canvas.parentElement.offsetHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            function animate() {
+                time += 0.02;
+                ctx.fillStyle = 'rgba(15, 15, 24, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+
+                switch (config.type) {
+                    case 'blink':
+                        const blinkAlpha = Math.sin(time * 2) > 0 ? 1 : 0.1;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+                        ctx.fillStyle = config.color;
+                        ctx.globalAlpha = blinkAlpha;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+
+                        // Glow
+                        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 150);
+                        gradient.addColorStop(0, config.color + '40');
+                        gradient.addColorStop(1, 'transparent');
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, 150, 0, Math.PI * 2);
+                        ctx.fillStyle = gradient;
+                        ctx.globalAlpha = blinkAlpha;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                        break;
+
+                    case 'semaforo':
+                        const phase = Math.floor(time % 3);
+                        const colors = ['#22c55e', '#eab308', '#ef4444'];
+                        const positions = [-80, 0, 80];
+
+                        positions.forEach((y, i) => {
+                            ctx.beginPath();
+                            ctx.arc(cx, cy + y, 30, 0, Math.PI * 2);
+                            ctx.fillStyle = colors[i];
+                            ctx.globalAlpha = i === phase ? 1 : 0.2;
+                            ctx.fill();
+                            ctx.globalAlpha = 1;
+                        });
+                        break;
+
+                    case 'fade':
+                        const fadeAlpha = 0.3 + Math.sin(time) * 0.7;
+                        for (let i = 0; i < 5; i++) {
+                            ctx.beginPath();
+                            ctx.arc(cx - 100 + i * 50, cy, 20, 0, Math.PI * 2);
+                            ctx.fillStyle = config.color;
+                            ctx.globalAlpha = fadeAlpha;
+                            ctx.fill();
+                        }
+                        ctx.globalAlpha = 1;
+                        break;
+
+                    case 'pulse':
+                        const pulseSize = 50 + Math.sin(time * 3) * 30;
+                        const pulseAlpha = Math.abs(Math.sin(time * 3));
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, pulseSize, 0, Math.PI * 2);
+                        ctx.strokeStyle = config.color;
+                        ctx.lineWidth = 3;
+                        ctx.globalAlpha = pulseAlpha;
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+
+                        // Waves
+                        for (let i = 1; i <= 3; i++) {
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, pulseSize + i * 40, 0, Math.PI * 2);
+                            ctx.strokeStyle = config.color;
+                            ctx.lineWidth = 2;
+                            ctx.globalAlpha = pulseAlpha * (1 - i * 0.25);
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
+                        break;
+
+                    case 'sun':
+                        const sunAngle = time * 0.5;
+
+                        // Sun center
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+                        ctx.fillStyle = config.color;
+                        ctx.fill();
+
+                        // Flower/sensor pointing at sun
+                        const sunX = cx + Math.cos(sunAngle) * 150;
+                        const sunY = cy + Math.sin(sunAngle) * 100;
+
+                        ctx.beginPath();
+                        ctx.arc(sunX, sunY, 30, 0, Math.PI * 2);
+                        ctx.fillStyle = '#fff';
+                        ctx.globalAlpha = 0.8;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+
+                        // Line from center to sun
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy);
+                        ctx.lineTo(sunX, sunY);
+                        ctx.strokeStyle = config.color;
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                        break;
+
+                    case 'robot':
+                        const robotX = cx + Math.sin(time) * 100;
+                        const robotY = cy + Math.cos(time * 0.7) * 50;
+
+                        // Robot body
+                        ctx.fillStyle = config.color;
+                        ctx.fillRect(robotX - 30, robotY - 20, 60, 40);
+
+                        // Wheels
+                        ctx.beginPath();
+                        ctx.arc(robotX - 20, robotY + 25, 15, 0, Math.PI * 2);
+                        ctx.arc(robotX + 20, robotY + 25, 15, 0, Math.PI * 2);
+                        ctx.fillStyle = '#333';
+                        ctx.fill();
+
+                        // Sensor beam
+                        ctx.beginPath();
+                        ctx.moveTo(robotX, robotY - 20);
+                        ctx.lineTo(robotX - 30, robotY - 80);
+                        ctx.lineTo(robotX + 30, robotY - 80);
+                        ctx.closePath();
+                        ctx.fillStyle = config.color + '30';
+                        ctx.fill();
+                        break;
+
+                    case 'ir':
+                        // IR waves
+                        for (let i = 0; i < 5; i++) {
+                            const waveSize = (time * 50 + i * 40) % 200;
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, waveSize, -0.5, 0.5);
+                            ctx.strokeStyle = config.color;
+                            ctx.lineWidth = 3;
+                            ctx.globalAlpha = 1 - waveSize / 200;
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
+
+                        // Remote
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(cx - 100, cy - 40, 60, 100);
+                        ctx.fillStyle = config.color;
+                        ctx.beginPath();
+                        ctx.arc(cx - 70, cy - 20, 10, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+
+                    case 'arm':
+                        const baseAngle = Math.sin(time * 0.5) * 0.5;
+                        const elbowAngle = Math.sin(time * 0.7) * 0.8;
+
+                        // Base
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(cx - 40, cy + 80, 80, 40);
+
+                        // Arm segments
+                        ctx.save();
+                        ctx.translate(cx, cy + 80);
+                        ctx.rotate(baseAngle - Math.PI / 2);
+
+                        ctx.fillStyle = config.color;
+                        ctx.fillRect(-10, 0, 20, -80);
+
+                        ctx.translate(0, -80);
+                        ctx.rotate(elbowAngle);
+                        ctx.fillRect(-8, 0, 16, -60);
+
+                        // Gripper
+                        ctx.translate(0, -60);
+                        ctx.fillRect(-20, 0, 15, -20);
+                        ctx.fillRect(5, 0, 15, -20);
+
+                        ctx.restore();
+                        break;
+
+                    case 'line':
+                        // Track
+                        ctx.strokeStyle = '#333';
+                        ctx.lineWidth = 30;
+                        ctx.beginPath();
+                        ctx.moveTo(100, cy);
+                        ctx.bezierCurveTo(cx, cy - 100, cx, cy + 100, canvas.width - 100, cy);
+                        ctx.stroke();
+
+                        // Robot on track
+                        const t = (time * 0.1) % 1;
+                        const trackX = 100 + t * (canvas.width - 200);
+                        const trackY = cy + Math.sin(t * Math.PI * 2) * 50;
+
+                        ctx.fillStyle = config.color;
+                        ctx.fillRect(trackX - 20, trackY - 15, 40, 30);
+                        break;
+
+                    case 'lcd':
+                        // LCD frame
+                        ctx.fillStyle = '#1a1a2e';
+                        ctx.fillRect(cx - 120, cy - 50, 240, 100);
+                        ctx.strokeStyle = config.color;
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(cx - 120, cy - 50, 240, 100);
+
+                        // Text
+                        ctx.fillStyle = config.color;
+                        ctx.font = '24px "JetBrains Mono", monospace';
+                        ctx.textAlign = 'center';
+                        const messages = ['EIGENROBOTICS', 'HOLA MUNDO!', 'ARDUINO+LEGO'];
+                        const msgIndex = Math.floor(time) % messages.length;
+                        ctx.fillText(messages[msgIndex], cx, cy + 8);
+                        break;
+
+                    case 'serial':
+                        // Data stream
+                        ctx.font = '14px "JetBrains Mono", monospace';
+                        ctx.fillStyle = config.color;
+                        const chars = '01';
+                        for (let i = 0; i < 20; i++) {
+                            const x = (time * 100 + i * 50) % canvas.width;
+                            const y = 50 + (i * 37) % (canvas.height - 100);
+                            ctx.globalAlpha = 0.3 + Math.random() * 0.5;
+                            ctx.fillText(chars[Math.floor(Math.random() * 2)], x, y);
+                        }
+                        ctx.globalAlpha = 1;
+
+                        // Terminal
+                        ctx.fillStyle = '#1a1a2e';
+                        ctx.fillRect(cx - 150, cy - 60, 300, 120);
+                        ctx.strokeStyle = config.color;
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(cx - 150, cy - 60, 300, 120);
+
+                        ctx.fillStyle = config.color;
+                        ctx.textAlign = 'left';
+                        ctx.fillText('> LED_ON', cx - 130, cy - 20);
+                        ctx.fillStyle = '#666';
+                        ctx.fillText('< LED encendido', cx - 130, cy + 10);
+                        ctx.fillStyle = config.color;
+                        const cursor = Math.sin(time * 5) > 0 ? '_' : ' ';
+                        ctx.fillText('> ' + cursor, cx - 130, cy + 40);
+                        break;
+                }
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        });
+    </script>
+</body>
+</html>
