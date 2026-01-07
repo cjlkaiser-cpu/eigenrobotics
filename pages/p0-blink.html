@@ -772,6 +772,7 @@
             <a href="#codigo">Código</a>
             <a href="#simulador">Simulador</a>
             <a href="#pasos">Paso a paso</a>
+            <a href="#problemas">Problemas comunes</a>
         </div>
     </nav>
 
@@ -1357,6 +1358,157 @@ void loop() {
                         ¡Prepárate para el proyecto del semáforo!
                     </p>
                 </div>
+            </div>
+        </section>
+
+        <!-- Problemas Comunes Section -->
+        <section class="section" id="problemas">
+            <div class="section-header">
+                <div class="section-number">07</div>
+                <h2 class="section-title">Problemas comunes</h2>
+                <p class="section-intro">
+                    Soluciones a los problemas mas frecuentes que encontraras en tu primera sesion con Arduino.
+                    Basado en experiencia real de principiantes.
+                </p>
+            </div>
+
+            <!-- Problema 1: Elegoo vs Arduino -->
+            <div class="explanation-card">
+                <h4>
+                    <span>🔌</span>
+                    "Mi placa es Elegoo, no Arduino"
+                </h4>
+                <p>
+                    <strong>No te preocupes.</strong> Las placas Elegoo son <span class="highlight">clones 100% compatibles</span> con Arduino.
+                    Usan el mismo microcontrolador (ATmega2560 o ATmega328P) y funcionan exactamente igual.
+                    En Arduino IDE selecciona <span class="highlight">"Arduino Mega or Mega 2560"</span> o <span class="highlight">"Arduino UNO"</span>
+                    segun tu modelo, aunque la placa diga "Elegoo". Funcionara perfectamente.
+                </p>
+            </div>
+
+            <!-- Problema 2: Missing FQBN -->
+            <div class="explanation-card">
+                <h4>
+                    <span>⚠️</span>
+                    Error "Missing FQBN (Fully Qualified Board Name)"
+                </h4>
+                <p>
+                    Este error significa que <span class="highlight">no has seleccionado la placa</span> correctamente.
+                    En Arduino IDE 2.x (la version nueva):
+                </p>
+                <ol style="margin: 1rem 0; padding-left: 1.5rem; color: var(--text-secondary);">
+                    <li>Haz clic en el <strong>dropdown superior</strong> (donde dice "Select Board" o muestra un puerto)</li>
+                    <li>Selecciona tu <strong>puerto USB</strong> de la lista</li>
+                    <li>En el buscador escribe <span class="highlight">"Mega"</span> o <span class="highlight">"UNO"</span></li>
+                    <li>Selecciona <strong>"Arduino Mega or Mega 2560"</strong> o <strong>"Arduino UNO"</strong></li>
+                    <li>Haz clic en <strong>OK</strong></li>
+                </ol>
+                <p>Ahora intenta subir el codigo de nuevo.</p>
+            </div>
+
+            <!-- Problema 3: Protoboard -->
+            <div class="explanation-card">
+                <h4>
+                    <span>🔲</span>
+                    La protoboard: dos mitades separadas
+                </h4>
+                <p>
+                    La protoboard tiene un <span class="highlight">surco central</span> que la divide en dos mitades independientes:
+                </p>
+                <div style="background: var(--bg-code); border-radius: 8px; padding: 1.5rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+                    <pre style="margin: 0; color: var(--text-secondary);">
+   A B C D E     F G H I J
+   ─────────     ─────────
+   ● ● ● ● ●  │  ● ● ● ● ●   ← fila 10
+   conectados │  conectados
+    entre si  │   entre si
+              │
+           surco</pre>
+                </div>
+                <p>
+                    <strong>Importante:</strong> Las columnas <span class="highlight">A-B-C-D-E</span> estan conectadas entre si en cada fila.
+                    Las columnas <span class="highlight">F-G-H-I-J</span> estan conectadas entre si en cada fila.
+                    <strong>Pero A-E y F-J NO estan conectadas.</strong>
+                    Si necesitas pasar senal de un lado al otro, usa un <span class="highlight">cable puente</span> que cruce el surco.
+                </p>
+            </div>
+
+            <!-- Problema 4: GND multiple -->
+            <div class="explanation-card">
+                <h4>
+                    <span>➖</span>
+                    ¿Como conecto varios componentes a GND si solo hay un pin?
+                </h4>
+                <p>
+                    Usa el <span class="highlight">bus de la protoboard</span> (las filas marcadas con + y - en los laterales):
+                </p>
+                <div style="background: var(--bg-code); border-radius: 8px; padding: 1.5rem; margin: 1rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+                    <pre style="margin: 0; color: var(--text-secondary);">
+Placa GND ───→ Bus (-) de la protoboard
+                    │
+              ┌─────┴─────┐
+              │           │
+           LED 1       LED 2
+           (pata -)    (pata -)</pre>
+                </div>
+                <p>
+                    Conecta <strong>un solo cable</strong> desde el pin GND de la placa al bus negativo (-).
+                    Ahora toda esa fila es GND y puedes conectar multiples componentes a ella.
+                    Esto es la forma estandar de trabajar con protoboards.
+                </p>
+            </div>
+
+            <!-- Problema 5: LEDs diferentes colores -->
+            <div class="explanation-card">
+                <h4>
+                    <span>💡</span>
+                    LEDs de diferente color en paralelo: solo funciona uno
+                </h4>
+                <p>
+                    <strong>El problema:</strong> Si conectas un LED rojo y uno verde en paralelo al mismo pin,
+                    probablemente <span class="highlight">solo el rojo se encienda</span>. Si quitas el rojo, el verde funciona.
+                </p>
+                <p style="margin-top: 1rem;">
+                    <strong>¿Por que?</strong> Los LEDs de diferente color tienen diferente <span class="highlight">voltaje de encendido</span>:
+                </p>
+                <ul style="margin: 1rem 0; padding-left: 1.5rem; color: var(--text-secondary);">
+                    <li>LED rojo: ~1.8V</li>
+                    <li>LED amarillo: ~2.0V</li>
+                    <li>LED verde: ~2.2V</li>
+                    <li>LED azul: ~3.0V</li>
+                </ul>
+                <p>
+                    Cuando estan en paralelo, la corriente "prefiere" el camino de menor resistencia (el LED rojo).
+                    El rojo <span class="highlight">"roba" toda la corriente</span> y el verde no recibe suficiente para encenderse.
+                </p>
+                <p style="margin-top: 1rem;">
+                    <strong>Soluciones:</strong>
+                </p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-secondary);">
+                    <li>Usar LEDs del <strong>mismo color</strong> (mismo voltaje)</li>
+                    <li>Usar <strong>pines separados</strong> para cada LED (mejor para aprender)</li>
+                    <li>Usar resistencias de diferente valor para compensar</li>
+                </ul>
+            </div>
+
+            <!-- Problema 6: Alimentacion -->
+            <div class="explanation-card">
+                <h4>
+                    <span>🔋</span>
+                    ¿Necesito conectar la placa a la corriente?
+                </h4>
+                <p>
+                    <strong>No.</strong> El cable USB hace dos cosas a la vez:
+                </p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-secondary);">
+                    <li><strong>Alimenta</strong> la placa (5V de corriente)</li>
+                    <li><strong>Comunica</strong> con el ordenador (para programar)</li>
+                </ul>
+                <p style="margin-top: 1rem;">
+                    Solo necesitas alimentacion externa (pila 9V o adaptador 7-12V en el jack negro)
+                    si quieres que el proyecto <span class="highlight">funcione sin estar conectado al ordenador</span>.
+                    El codigo queda guardado permanentemente en la placa, no se borra al desconectar.
+                </p>
             </div>
         </section>
 

@@ -68,7 +68,11 @@ void loop() {
 
 ## Estado
 
-- [ ] IDE instalado
-- [ ] Placa detectada
-- [ ] Blink funcionando
-- [ ] Experimentos completados
+- [x] IDE instalado
+- [x] Placa detectada
+- [x] Blink funcionando
+- [x] Experimentos completados (2 LEDs en paralelo)
+
+## Sesiones
+
+- [SESION_2026-01-07.md](SESION_2026-01-07.md) - Primera sesion con kit Elegoo

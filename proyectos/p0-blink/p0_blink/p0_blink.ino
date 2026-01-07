@@ -23,9 +23,10 @@ void setup() {
 
 void loop() {
   digitalWrite(LED, HIGH);  // Encender
-  delay(1000);              // Esperar 1 segundo
+  delay(100);              // Esperar 1 segundo
   digitalWrite(LED, LOW);   // Apagar
-  delay(1000);              // Esperar 1 segundo
+  delay(900
+  );              // Esperar 1 segundo
 }
 
 /*
